@@ -1,5 +1,25 @@
 import 'package:easy_ui/easy_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
 
 class Body extends StatelessWidget {
   const Body({super.key, required this.child});

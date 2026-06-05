@@ -1,7 +1,28 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
+import 'package:example/widgets/example_easy_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 

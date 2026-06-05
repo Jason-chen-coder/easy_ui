@@ -1,7 +1,26 @@
 import 'package:easy_ui/easy_ui.dart';
 import 'package:example/main.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
 
 const _overviewAssetByRoute = <String, String>{
   'avatar': 'assets/overview/avatar.svg',
@@ -92,14 +111,16 @@ class Overview extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: EasyTheme.of(context).neutralEE),
+                borderRadius: BorderRadius.all(
+                  EasyTheme.of(context).cornerSmall,
+                ),
               ),
               child: Text(
                 '${category.children.length}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: EasyTheme.of(context).neutral66,
+                ),
               ),
             ),
           ],
@@ -133,10 +154,27 @@ class Overview extends StatelessWidget {
       );
     }
 
-    return Material(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: InkWell(
-        onTap: () {
+    final easyTheme = EasyTheme.of(context);
+
+    return SizedBox(
+      width: 240,
+      height: 160,
+      child: EasyButton2(
+        type: EasyButtonType.text,
+        style: EasyButtonStyle.styleFrom(
+          alignment: Alignment.topLeft,
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          fixedSize: const Size(240, 160),
+          backgroundColor: easyTheme.cardBackground,
+          foregroundColor: easyTheme.onCardBackground,
+          overlayColor: easyTheme.secondaryBlue,
+          side: BorderSide(color: easyTheme.neutralEE),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(easyTheme.cornerSmall),
+          ),
+        ),
+        onPressed: () {
           if (node.routeName != null) {
             navigateToRoute(node.routeName!);
           } else if (node.hasChildren && node.children.isNotEmpty) {
@@ -145,10 +183,7 @@ class Overview extends StatelessWidget {
             }
           }
         },
-        borderRadius: BorderRadius.circular(8),
         child: Container(
-          width: 240,
-          height: 160,
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.max,
@@ -175,9 +210,10 @@ class Overview extends StatelessWidget {
                                       ConnectionState.done &&
                                   !snapshot.hasError &&
                                   snapshot.data != null) {
-                                return SvgPicture.memory(
+                                return EasySvgIcon.memory(
                                   snapshot.data!.buffer.asUint8List(),
                                   fit: BoxFit.contain,
+                                  inheritIconThemeColor: false,
                                 );
                               }
                               return buildPlaceholder();

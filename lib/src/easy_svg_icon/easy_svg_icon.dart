@@ -22,6 +22,7 @@ class EasySvgIcon extends StatelessWidget {
     this.allowDrawingOutsideViewBox = false,
     this.placeholderBuilder,
     this.colorFilter,
+    this.inheritIconThemeColor = true,
     this.semanticsLabel,
     this.excludeFromSemantics = false,
     this.clipBehavior = Clip.hardEdge,
@@ -48,6 +49,7 @@ class EasySvgIcon extends StatelessWidget {
     SvgTheme? theme,
     ColorMapper? colorMapper,
     this.colorFilter,
+    this.inheritIconThemeColor = true,
     this.renderingStrategy = RenderingStrategy.picture,
   }) : bytesLoader = SvgAssetLoader(
          assetName,
@@ -69,6 +71,7 @@ class EasySvgIcon extends StatelessWidget {
     this.allowDrawingOutsideViewBox = false,
     this.placeholderBuilder,
     this.colorFilter,
+    this.inheritIconThemeColor = true,
     this.semanticsLabel,
     this.excludeFromSemantics = false,
     this.clipBehavior = Clip.hardEdge,
@@ -96,6 +99,7 @@ class EasySvgIcon extends StatelessWidget {
     this.allowDrawingOutsideViewBox = false,
     this.placeholderBuilder,
     this.colorFilter,
+    this.inheritIconThemeColor = true,
     this.semanticsLabel,
     this.excludeFromSemantics = false,
     this.clipBehavior = Clip.hardEdge,
@@ -120,6 +124,7 @@ class EasySvgIcon extends StatelessWidget {
     this.allowDrawingOutsideViewBox = false,
     this.placeholderBuilder,
     this.colorFilter,
+    this.inheritIconThemeColor = true,
     this.semanticsLabel,
     this.excludeFromSemantics = false,
     this.clipBehavior = Clip.hardEdge,
@@ -144,6 +149,7 @@ class EasySvgIcon extends StatelessWidget {
     this.allowDrawingOutsideViewBox = false,
     this.placeholderBuilder,
     this.colorFilter,
+    this.inheritIconThemeColor = true,
     this.semanticsLabel,
     this.excludeFromSemantics = false,
     this.clipBehavior = Clip.hardEdge,
@@ -237,6 +243,10 @@ class EasySvgIcon extends StatelessWidget {
   /// The color filter, if any, to apply to this widget.
   final ColorFilter? colorFilter;
 
+  /// Whether the SVG should inherit [IconTheme.color] when [colorFilter] is
+  /// not provided.
+  final bool inheritIconThemeColor;
+
   /// Widget rendering strategy used to balance flexibility and performance.
   ///
   /// See the enum [RenderingStrategy] for details of all possible options and their common
@@ -251,7 +261,9 @@ class EasySvgIcon extends StatelessWidget {
 
     ColorFilter? effectiveColorFilter = colorFilter;
 
-    if (effectiveColorFilter == null && iconTheme.color != null) {
+    if (inheritIconThemeColor &&
+        effectiveColorFilter == null &&
+        iconTheme.color != null) {
       final color = iconTheme.color!;
       final opacity = iconTheme.opacity ?? 1.0;
       final effectiveColor =

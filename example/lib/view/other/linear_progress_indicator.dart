@@ -1,7 +1,28 @@
 import 'dart:async';
 
 import 'package:easy_ui/easy_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
+import 'package:example/widgets/example_easy_widgets.dart';
 
 import '../../../widgets/body_widget.dart';
 import '../../../widgets/paragraph_helper.dart';

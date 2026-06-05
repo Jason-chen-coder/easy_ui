@@ -1,5 +1,25 @@
 import 'package:easy_ui/easy_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
 
 class WidgetHighlight extends StatefulWidget {
   const WidgetHighlight({
@@ -35,23 +55,23 @@ class _WidgetHighlightState extends State<WidgetHighlight> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final easyTheme = EasyTheme.of(context);
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         border: Border.all(
-          color: EasyTheme.of(context).onBackground.withValues(alpha: 0.1),
+          color: easyTheme.onBackground.withValues(alpha: 0.1),
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: EasyTheme.of(context).onBackground.withValues(alpha: 0.1),
+            color: easyTheme.onBackground.withValues(alpha: 0.1),
             blurRadius: 8.0,
             offset: const Offset(0, 4),
           ),
         ],
-        borderRadius: BorderRadius.circular(8.0),
-        color: widget.backgroundColor ?? EasyTheme.of(context).background,
+        borderRadius: BorderRadius.all(easyTheme.cornerSmall),
+        color: widget.backgroundColor ?? easyTheme.background,
       ),
       child: Column(
         children: [
@@ -62,44 +82,71 @@ class _WidgetHighlightState extends State<WidgetHighlight> {
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: EasyTheme.of(
-                    context,
-                  ).onBackground.withValues(alpha: 0.1),
+                  color: easyTheme.onBackground.withValues(alpha: 0.1),
                   width: 2.0,
                 ),
               ),
             ),
             child: widget.builder.call(context),
           ),
-          Theme(
-            data: theme.copyWith(
-              dividerColor: Colors.transparent,
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              hoverColor: Colors.transparent,
-            ),
-            child:
-                widget.codeSnippet != ""
-                    ? ExpansionTile(
-                      initiallyExpanded: widget.initiallyOpen,
-                      onExpansionChanged: (state) {
-                        if (mounted) setState(() => isOpen = state);
-                      },
-                      title:
-                          widget.header ??
-                          const Text(
-                            '源代码',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                      children: [EasyMarkdown(text: widget.codeSnippet)],
-                    )
-                    : Container(),
-          ),
+          if (widget.codeSnippet != "") _buildCodePanel(context, easyTheme),
         ],
       ),
+    );
+  }
+
+  Widget _buildCodePanel(BuildContext context, EasyThemeData easyTheme) {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: EasyButton2(
+            type: EasyButtonType.text,
+            style: EasyButtonStyle.styleFrom(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              minimumSize: Size.zero,
+              backgroundColor: Colors.transparent,
+              foregroundColor: easyTheme.neutral66,
+              overlayColor: easyTheme.secondaryBlue,
+              shape: const RoundedRectangleBorder(),
+            ),
+            onPressed: () {
+              if (mounted) setState(() => isOpen = !isOpen);
+            },
+            child: Row(
+              children: [
+                Expanded(
+                  child:
+                      widget.header ??
+                      const Text(
+                        '源代码',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                ),
+                Icon(
+                  isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: easyTheme.neutral99,
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: EasyMarkdown(text: widget.codeSnippet),
+          crossFadeState:
+              isOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 180),
+          firstCurve: Curves.easeOut,
+          secondCurve: Curves.easeOut,
+          sizeCurve: Curves.easeOut,
+        ),
+      ],
     );
   }
 }

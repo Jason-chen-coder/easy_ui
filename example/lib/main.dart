@@ -49,7 +49,27 @@ import 'package:example/view/other/easy_rich_editor_demo.dart';
 import 'package:example/view/other/linear_progress_indicator.dart';
 import 'package:example/view/other/marquee_gradient_bar.dart';
 import 'package:example/view/data_entry/slider_demo.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
 
 import 'view/overview.dart';
 
@@ -331,49 +351,93 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _showLocaleDropdown(BuildContext context) async {
+    final current = widget.currentLocale;
+    final easyTheme = EasyTheme.of(context);
+
+    await showEasyDropdown<Locale>(
+      context: context,
+      width: 148,
+      backgroundColor: easyTheme.background,
+      itemPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      items: [
+        _dropdownItem(
+          value: const Locale('zh'),
+          label: '中文',
+          selected: current.languageCode == 'zh',
+        ),
+        _dropdownItem(
+          value: const Locale('en'),
+          label: 'English',
+          selected: current.languageCode == 'en',
+        ),
+      ],
+      onSelected: widget.onLocaleChanged,
+    );
+  }
+
+  Future<void> _showThemeModeDropdown(BuildContext context) async {
+    final current = widget.currentThemeMode;
+    final easyTheme = EasyTheme.of(context);
+
+    await showEasyDropdown<ThemeMode>(
+      context: context,
+      width: 150,
+      backgroundColor: easyTheme.background,
+      itemPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      items: [
+        _dropdownItem(
+          value: ThemeMode.system,
+          label: '跟随系统',
+          selected: current == ThemeMode.system,
+        ),
+        _dropdownItem(
+          value: ThemeMode.light,
+          label: '亮色',
+          selected: current == ThemeMode.light,
+        ),
+        _dropdownItem(
+          value: ThemeMode.dark,
+          label: '暗色',
+          selected: current == ThemeMode.dark,
+        ),
+      ],
+      onSelected: widget.onThemeModeChanged,
+    );
+  }
+
+  EasyDropdownIconItem<T> _dropdownItem<T>({
+    required T value,
+    required String label,
+    required bool selected,
+  }) {
+    final easyTheme = EasyTheme.of(context);
+
+    return EasyDropdownIconItem<T>(
+      value: value,
+      icon:
+          selected
+              ? Icon(Icons.check, size: 16, color: easyTheme.secondaryBlue)
+              : const SizedBox(width: 16, height: 16),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          color: selected ? easyTheme.secondaryBlue : easyTheme.neutral66,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+        ),
+      ),
+    );
+  }
+
   Widget _buildLocaleSwitcher(ThemeData theme) {
     final current = widget.currentLocale;
     final String label = current.languageCode == 'zh' ? '中文' : 'English';
-    return PopupMenuButton<Locale>(
+    return _ShellDropdownButton(
       tooltip: 'Language',
-      position: PopupMenuPosition.under,
-      offset: const Offset(0, 8),
-      constraints: const BoxConstraints(minWidth: 140),
-      color: Colors.white,
-      surfaceTintColor: Colors.transparent,
-      onSelected: (locale) {
-        widget.onLocaleChanged(locale);
-      },
-      itemBuilder:
-          (context) => const [
-            PopupMenuItem(value: Locale('zh'), child: Text('中文')),
-            PopupMenuItem(value: Locale('en'), child: Text('English')),
-          ],
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.translate,
-              size: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 6),
-            Text(label, style: theme.textTheme.bodySmall),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ],
-        ),
-      ),
+      icon: Icons.translate,
+      label: label,
+      onPressed: _showLocaleDropdown,
     );
   }
 
@@ -385,45 +449,11 @@ class _HomePageState extends State<HomePage> {
       ThemeMode.dark => '暗色',
     };
 
-    return PopupMenuButton<ThemeMode>(
+    return _ShellDropdownButton(
       tooltip: 'Theme Mode',
-      position: PopupMenuPosition.under,
-      offset: const Offset(0, 8),
-      constraints: const BoxConstraints(minWidth: 150),
-      color: theme.colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      onSelected: widget.onThemeModeChanged,
-      itemBuilder:
-          (context) => const [
-            PopupMenuItem(value: ThemeMode.system, child: Text('跟随系统')),
-            PopupMenuItem(value: ThemeMode.light, child: Text('亮色')),
-            PopupMenuItem(value: ThemeMode.dark, child: Text('暗色')),
-          ],
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.brightness_6,
-              size: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 6),
-            Text(label, style: theme.textTheme.bodySmall),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ],
-        ),
-      ),
+      icon: Icons.brightness_6,
+      label: label,
+      onPressed: _showThemeModeDropdown,
     );
   }
 
@@ -445,7 +475,11 @@ class _HomePageState extends State<HomePage> {
                 if (node == null || node.builder == null) {
                   return [
                     MaterialPageRoute(
-                      builder: (context) => const Placeholder(),
+                      builder:
+                          (context) => const EasyEmptyView(
+                            title: '页面不存在',
+                            text: '没有找到对应的组件示例',
+                          ),
                     ),
                   ];
                 } else {
@@ -457,7 +491,11 @@ class _HomePageState extends State<HomePage> {
                 final node = _findNodeByRoute(settings.name ?? '');
                 if (node == null || node.builder == null) {
                   return MaterialPageRoute(
-                    builder: (context) => const Placeholder(),
+                    builder:
+                        (context) => const EasyEmptyView(
+                          title: '页面不存在',
+                          text: '没有找到对应的组件示例',
+                        ),
                   );
                 } else {
                   return MaterialPageRoute(builder: node.builder!);
@@ -489,32 +527,25 @@ class _HomePageState extends State<HomePage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: SearchBar(
+            child: EasyTextFormField(
               controller: _searchController,
-              hintText: '搜索组件...',
-              leading: const Icon(Icons.search),
-              trailing: [
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        _isSearching = false;
-                        _filteredTreeItems = treeItems;
-                      });
-                    },
-                  ),
-              ],
-              onChanged: (value) => _onSearchChanged(),
-              padding: const WidgetStatePropertyAll<EdgeInsets>(
-                EdgeInsets.symmetric(horizontal: 16.0),
-              ),
-              elevation: const WidgetStatePropertyAll<double>(0),
-              shape: WidgetStatePropertyAll<OutlinedBorder>(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  side: BorderSide(color: theme.colorScheme.primary),
+              decorationLayoutDelegate: null,
+              placeholder: '搜索组件...',
+              height: 40,
+              decoration: InputDecoration(
+                isDense: true,
+                prefixIcon: Icon(
+                  Icons.search,
+                  size: 18,
+                  color: EasyTheme.of(context).neutral99,
+                ),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 40,
+                  minHeight: 40,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
                 ),
               ),
             ),
@@ -535,9 +566,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     if (widget.onOpenLanding != null)
-                      IconButton(
+                      _ShellIconButton(
                         tooltip: '返回首页',
-                        icon: const Icon(Icons.home_outlined, size: 18),
+                        icon: Icons.home_outlined,
                         onPressed: widget.onOpenLanding,
                       ),
                   ],
@@ -554,83 +585,210 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           if (_isSearching && _filteredTreeItems.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                '没有找到匹配的组件',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+            const Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: EasyEmptyView(text: '没有找到匹配的组件'),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: (context, index) {
+                  final item = list[index];
+                  final node = item.node;
+                  final level = item.level;
+                  final selected = _selectedRoute == node.routeName;
+
+                  return _SideBarTreeItem(
+                    key: ValueKey(node.routeName ?? node.title),
+                    title: node.title,
+                    level: level,
+                    selected: selected,
+                    expanded: node.isExpanded,
+                    hasChildren: node.hasChildren,
+                    onPressed: () => _onNodeTap(node),
+                  );
+                },
+                itemCount: list.length,
               ),
             ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: (context, index) {
-                final item = list[index];
-                final node = item.node;
-                final level = item.level;
-                final selected = _selectedRoute == node.routeName;
+        ],
+      ),
+    );
+  }
+}
 
-                return Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 4.0,
-                    vertical: 1.0,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    color: selected ? theme.colorScheme.primaryContainer : null,
-                  ),
-                  child: ListTile(
-                    key: ValueKey(node.routeName ?? node.title),
-                    dense: true,
-                    contentPadding: EdgeInsets.only(
-                      left: 8.0 + (level * 16.0),
-                      right: 8.0,
-                    ),
-                    leading: SizedBox(
-                      width: 16,
-                      child:
-                          node.hasChildren
-                              ? Icon(
-                                node.isExpanded
-                                    ? Icons.keyboard_arrow_down
-                                    : Icons.keyboard_arrow_right,
-                                size: 16,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              )
-                              : Icon(
-                                Icons.circle,
-                                size: 6,
-                                color: theme.colorScheme.onSurfaceVariant
-                                    .withValues(alpha: 0.6),
-                              ),
-                    ),
-                    title: Text(
-                      node.title,
-                      style: TextStyle(
-                        fontWeight:
-                            node.hasChildren
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                        fontSize: node.hasChildren ? 14 : 13,
-                        color:
-                            selected
-                                ? theme.colorScheme.onPrimaryContainer
-                                : node.hasChildren
-                                ? theme.colorScheme.onSurface
-                                : theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    onTap: () => _onNodeTap(node),
-                    hoverColor: theme.colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                  ),
-                );
-              },
-              itemCount: list.length,
+class _ShellDropdownButton extends StatelessWidget {
+  const _ShellDropdownButton({
+    required this.tooltip,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final String label;
+  final ValueChanged<BuildContext> onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final easyTheme = EasyTheme.of(context);
+
+    return Builder(
+      builder: (buttonContext) {
+        return EasyButton2(
+          tooltip: tooltip,
+          type: EasyButtonType.outline,
+          size: EasyButtonSize.small,
+          style: EasyButtonStyle.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            minimumSize: Size.zero,
+            backgroundColor: easyTheme.background,
+            foregroundColor: easyTheme.neutral66,
+            side: BorderSide(color: easyTheme.neutralEE),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(easyTheme.cornerSmall),
             ),
           ),
-        ],
+          onPressed: () => onPressed(buttonContext),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16),
+              const SizedBox(width: 6),
+              Text(label, style: const TextStyle(fontSize: 12)),
+              const SizedBox(width: 4),
+              const Icon(Icons.keyboard_arrow_down, size: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ShellIconButton extends StatelessWidget {
+  const _ShellIconButton({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final easyTheme = EasyTheme.of(context);
+
+    return EasyButton2(
+      tooltip: tooltip,
+      type: EasyButtonType.iconDefault,
+      size: EasyButtonSize.small,
+      style: EasyButtonStyle.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        fixedSize: const Size.square(32),
+        foregroundColor: easyTheme.neutral66,
+        backgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(easyTheme.cornerSmall),
+        ),
+      ),
+      onPressed: onPressed,
+      child: Icon(icon, size: 18),
+    );
+  }
+}
+
+class _SideBarTreeItem extends StatelessWidget {
+  const _SideBarTreeItem({
+    super.key,
+    required this.title,
+    required this.level,
+    required this.selected,
+    required this.expanded,
+    required this.hasChildren,
+    required this.onPressed,
+  });
+
+  final String title;
+  final int level;
+  final bool selected;
+  final bool expanded;
+  final bool hasChildren;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final easyTheme = EasyTheme.of(context);
+    final Color foregroundColor =
+        selected
+            ? easyTheme.secondaryBlue
+            : hasChildren
+            ? easyTheme.neutral33
+            : easyTheme.neutral66;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 1.0),
+      child: SizedBox(
+        width: double.infinity,
+        height: 34,
+        child: EasyButton2(
+          type: EasyButtonType.text,
+          style: EasyButtonStyle.styleFrom(
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.only(left: 8.0 + (level * 16.0), right: 8.0),
+            minimumSize: Size.zero,
+            backgroundColor:
+                selected
+                    ? easyTheme.secondaryBlue.withValues(alpha: 0.1)
+                    : Colors.transparent,
+            foregroundColor: foregroundColor,
+            overlayColor: easyTheme.secondaryBlue,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(easyTheme.cornerSmall),
+            ),
+          ),
+          onPressed: onPressed,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 16,
+                child:
+                    hasChildren
+                        ? Icon(
+                          expanded
+                              ? Icons.keyboard_arrow_down
+                              : Icons.keyboard_arrow_right,
+                          size: 16,
+                          color: easyTheme.neutral99,
+                        )
+                        : Icon(
+                          Icons.circle,
+                          size: 6,
+                          color: easyTheme.neutral99.withValues(alpha: 0.6),
+                        ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: hasChildren ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: hasChildren ? 14 : 13,
+                    color: foregroundColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

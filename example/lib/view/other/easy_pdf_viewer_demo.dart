@@ -2,7 +2,27 @@ import 'package:easy_ui/easy_ui.dart';
 import 'package:example/widgets/body_widget.dart';
 import 'package:example/widgets/paragraph_helper.dart';
 import 'package:example/widgets/widget_highlight.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
 
 class EasyPdfViewerDemo extends StatelessWidget {
   const EasyPdfViewerDemo({super.key});

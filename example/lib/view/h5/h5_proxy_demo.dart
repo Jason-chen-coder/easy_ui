@@ -3,7 +3,28 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:easy_ui/easy_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
+import 'package:example/widgets/example_easy_widgets.dart';
 
 /// 反向代理（LocalhostProxyRule）端到端 demo。
 ///

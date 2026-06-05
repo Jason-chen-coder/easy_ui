@@ -3,7 +3,28 @@ import 'package:example/widgets/body_widget.dart';
 import 'package:example/widgets/paragraph_helper.dart';
 import 'package:example/widgets/widget_highlight.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    hide
+        AlertDialog,
+        Card,
+        CircularProgressIndicator,
+        DataTable,
+        DropdownButton,
+        ElevatedButton,
+        FilledButton,
+        FloatingActionButton,
+        IconButton,
+        LinearProgressIndicator,
+        ListTile,
+        OutlinedButton,
+        RangeSlider,
+        Slider,
+        Switch,
+        TextButton,
+        TextField,
+        TextFormField,
+        showDialog;
+import 'package:example/widgets/example_easy_widgets.dart';
 
 class EasyFileDragAreaDemo extends StatelessWidget {
   const EasyFileDragAreaDemo({super.key});
