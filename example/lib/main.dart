@@ -148,6 +148,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return EasyToastWrapper(
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: easyBuildMaterialTheme(brightness: Brightness.light),
         darkTheme: easyBuildMaterialTheme(brightness: Brightness.dark),
         themeMode: _themeMode,

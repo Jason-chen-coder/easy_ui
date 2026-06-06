@@ -69,18 +69,18 @@ class _LandingTypography {
   static TextStyle heroTitle(_LandingPalette palette) {
     return TextStyle(
       color: palette.textStrong,
-      fontSize: 52,
-      height: 1.04,
-      fontWeight: FontWeight.w800,
+      fontSize: 56,
+      height: 1.02,
+      fontWeight: FontWeight.w900,
       letterSpacing: 0,
     );
   }
 
   static TextStyle heroSubtitle(_LandingPalette palette) {
     return TextStyle(
-      color: palette.textStrong,
-      fontSize: 24,
-      height: 1.32,
+      color: palette.textMuted,
+      fontSize: 21,
+      height: 1.42,
       fontWeight: FontWeight.w700,
       letterSpacing: 0,
     );
@@ -88,9 +88,9 @@ class _LandingTypography {
 
   static TextStyle sectionTitle(_LandingPalette palette) {
     return TextStyle(
-      color: palette.textMuted,
-      fontSize: 28,
-      height: 1.24,
+      color: palette.textStrong,
+      fontSize: 31,
+      height: 1.2,
       fontWeight: FontWeight.w800,
       letterSpacing: 0,
     );
@@ -359,34 +359,155 @@ class _HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(color: palette.heroBackground),
+    final viewportHeight = MediaQuery.sizeOf(context).height;
+    final width = MediaQuery.sizeOf(context).width;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: palette.heroBackground,
+        border: Border(bottom: BorderSide(color: palette.border)),
+      ),
       child: _ConstrainedSection(
-        top: 78,
-        bottom: 72,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = constraints.maxWidth < 850;
-            final intro = _HeroIntro(palette: palette, onNavigate: onNavigate);
-            final visual = _HeroVisual(palette: palette);
-
-            if (compact) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [intro, const SizedBox(height: 36), visual],
-              );
-            }
-
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(flex: 12, child: intro),
-                const SizedBox(width: 44),
-                Expanded(flex: 10, child: visual),
-              ],
-            );
-          },
+        top: 24,
+        bottom: 52,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: math.min(viewportHeight, 760)),
+          child: Column(
+            children: [
+              _HeroNav(palette: palette, onNavigate: onNavigate),
+              SizedBox(height: width < 720 ? 42 : 58),
+              _HeroIntro(palette: palette, onNavigate: onNavigate),
+              SizedBox(height: width < 720 ? 34 : 46),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: _HeroVisual(palette: palette),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _HeroNav extends StatelessWidget {
+  const _HeroNav({required this.palette, required this.onNavigate});
+
+  final _LandingPalette palette;
+  final ValueChanged<String> onNavigate;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 720;
+
+        return Row(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: palette.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: palette.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: palette.shadow,
+                        blurRadius: 16,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Image.asset('assets/images/easy_ui_logo.png'),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Easy UI',
+                  style: _LandingTypography.contentTitle(
+                    palette,
+                  ).copyWith(fontSize: 20),
+                ),
+              ],
+            ),
+            const Spacer(),
+            if (compact)
+              Tooltip(
+                message: '进入组件总览',
+                child: IconButton(
+                  onPressed: () => onNavigate('/overview'),
+                  icon: Icon(Icons.widgets_outlined, color: palette.textStrong),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: palette.surface,
+                    side: BorderSide(color: palette.border),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              )
+            else ...[
+              _HeroNavButton(
+                label: 'GitHub',
+                icon: const _GitHubMarkIcon(),
+                palette: palette,
+                onPressed: () => _launchExternal(Uri.parse(_easyUiRepoUrl)),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _GitHubMarkIcon extends StatelessWidget {
+  const _GitHubMarkIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: 18,
+      child: ClipOval(
+        child: Image.asset(
+          'assets/images/hero_github.png',
+          fit: BoxFit.cover,
+          semanticLabel: 'GitHub',
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroNavButton extends StatelessWidget {
+  const _HeroNavButton({
+    required this.label,
+    required this.icon,
+    required this.palette,
+    required this.onPressed,
+  });
+
+  final String label;
+  final Widget icon;
+  final _LandingPalette palette;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: icon,
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: palette.textStrong,
+        backgroundColor: palette.surface,
+        side: BorderSide(color: palette.border),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -400,25 +521,39 @@ class _HeroIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final titleStyle = _LandingTypography.heroTitle(palette).copyWith(
+      fontSize:
+          width < 420
+              ? 43
+              : width < 720
+              ? 50
+              : 66,
+      height: width < 720 ? 1.02 : 0.98,
+    );
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text('Easy UI Design', style: _LandingTypography.heroTitle(palette)),
-        const SizedBox(height: 14),
+        Text('Easy UI Design', textAlign: TextAlign.center, style: titleStyle),
+        const SizedBox(height: 16),
         Text(
           'Flutter 全平台应用的组件工作台',
+          textAlign: TextAlign.center,
           style: _LandingTypography.heroSubtitle(palette),
         ),
         const SizedBox(height: 18),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 620),
           child: Text(
-            '从按钮、表单、数据展示到富文本和 H5 容器，Easy UI 将迁移后的组件集中成一个可浏览、可验证、可复制的 Flutter UI kit。',
+            '迁移后的组件集中在一个可浏览、可验证、可复制的 Flutter UI kit 里。',
+            textAlign: TextAlign.center,
             style: _LandingTypography.body(palette),
           ),
         ),
         const SizedBox(height: 30),
         Wrap(
+          alignment: WrapAlignment.center,
           spacing: 12,
           runSpacing: 12,
           children: [
@@ -430,28 +565,29 @@ class _HeroIntro extends StatelessWidget {
                 backgroundColor: palette.primary,
                 foregroundColor: palette.onPrimary,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 16,
+                  horizontal: 22,
+                  vertical: 15,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: const StadiumBorder(),
               ),
             ),
             OutlinedButton.icon(
-              onPressed: () => onNavigate('/button'),
-              icon: const Icon(Icons.touch_app_outlined, size: 18),
-              label: const Text('查看按钮示例'),
+              onPressed:
+                  () => _copyText(
+                    context,
+                    text: _skillInstallCommand,
+                    message: '安装命令已复制',
+                  ),
+              icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+              label: const Text('安装 Skill'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: palette.textStrong,
                 side: BorderSide(color: palette.borderStrong),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 16,
+                  horizontal: 22,
+                  vertical: 15,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: const StadiumBorder(),
               ),
             ),
           ],
@@ -469,55 +605,43 @@ class _HeroVisual extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 382,
+      height: MediaQuery.sizeOf(context).width < 720 ? 390 : 460,
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(
+          MediaQuery.sizeOf(context).width < 720 ? 18 : 26,
+        ),
         decoration: BoxDecoration(
-          color: palette.surface,
+          color: palette.previewBackground,
           border: Border.all(color: palette.border),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(36),
           boxShadow: [
             BoxShadow(
               color: palette.shadow,
-              blurRadius: 26,
-              offset: const Offset(0, 18),
+              blurRadius: 36,
+              offset: const Offset(0, 26),
             ),
           ],
         ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                _WindowDot(color: palette.red),
-                const SizedBox(width: 6),
-                _WindowDot(color: palette.amber),
-                const SizedBox(width: 6),
-                _WindowDot(color: palette.green),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(child: _LogoShowcase(palette: palette)),
-          ],
-        ),
+        child: _ComponentAssetMap(palette: palette),
       ),
     );
   }
 }
 
-class _LogoShowcase extends StatefulWidget {
-  const _LogoShowcase({required this.palette});
+class _ComponentAssetMap extends StatefulWidget {
+  const _ComponentAssetMap({required this.palette});
 
   final _LandingPalette palette;
 
   @override
-  State<_LogoShowcase> createState() => _LogoShowcaseState();
+  State<_ComponentAssetMap> createState() => _ComponentAssetMapState();
 }
 
-class _LogoShowcaseState extends State<_LogoShowcase>
+class _ComponentAssetMapState extends State<_ComponentAssetMap>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 9),
+    duration: const Duration(seconds: 8),
   );
 
   @override
@@ -540,7 +664,7 @@ class _LogoShowcaseState extends State<_LogoShowcase>
   Widget build(BuildContext context) {
     final reducedMotion = MediaQuery.of(context).disableAnimations;
     if (reducedMotion) {
-      return _buildStage(context, 0);
+      return _buildStage(context, 0.18);
     }
 
     return AnimatedBuilder(
@@ -551,273 +675,381 @@ class _LogoShowcaseState extends State<_LogoShowcase>
 
   Widget _buildStage(BuildContext context, double progress) {
     final palette = widget.palette;
-    final phase = progress * math.pi * 2;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: palette.previewBackground,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.previewBackground,
+            palette.primary.withValues(alpha: 0.08),
+          ],
+        ),
         border: Border.all(color: palette.border),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(28),
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _LogoOrbitPainter(palette: palette, progress: progress),
-            ),
-          ),
-          Positioned(
-            width: 286,
-            height: 286,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    palette.primary.withValues(alpha: 0.18),
-                    palette.blue.withValues(alpha: 0.08),
-                    Colors.transparent,
-                  ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 620;
+          final nodeWidth = compact ? 126.0 : 168.0;
+          final nodeHeight = compact ? 62.0 : 70.0;
+          final coreSize = compact ? 120.0 : 164.0;
+          final phase = progress * math.pi * 2;
+          final pulse = (math.sin(phase) + 1) / 2;
+
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _AssetMapPainter(
+                    palette: palette,
+                    progress: progress,
+                    compact: compact,
+                  ),
                 ),
               ),
-            ),
-          ),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final shortest = math.min(
-                constraints.maxWidth,
-                constraints.maxHeight,
-              );
-              final logoSize = shortest.clamp(138.0, 188.0).toDouble();
-              final badgeSize = shortest < 250 ? 38.0 : 46.0;
-              final logoScale = 1 + math.sin(phase) * 0.018;
-
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  _OrbitBadge(
-                    alignment: const Alignment(-0.72, -0.68),
-                    progress: progress,
-                    delay: 0,
-                    size: badgeSize,
-                    label: 'GitHub',
-                    assetPath: 'assets/images/hero_github.png',
-                  ),
-                  _OrbitBadge(
-                    alignment: const Alignment(0.72, -0.56),
-                    progress: progress,
-                    delay: 0.22,
-                    size: badgeSize,
-                    label: 'Claude Code',
-                    assetPath: 'assets/images/hero_claude_code.png',
-                  ),
-                  _OrbitBadge(
-                    alignment: const Alignment(-0.68, 0.64),
-                    progress: progress,
-                    delay: 0.48,
-                    size: badgeSize,
-                    label: 'Codex',
-                    assetPath: 'assets/images/hero_codex.jpg',
-                  ),
-                  _OrbitBadge(
-                    alignment: const Alignment(0.67, 0.66),
-                    progress: progress,
-                    delay: 0.72,
-                    size: badgeSize,
-                    label: 'Cursor',
-                    assetPath: 'assets/images/hero_cursor.jpg',
-                  ),
-                  _SparkDot(
-                    alignment: const Alignment(-0.18, -0.86),
-                    progress: progress,
-                    delay: 0.1,
-                    color: palette.primary,
-                  ),
-                  _SparkDot(
-                    alignment: const Alignment(0.22, 0.86),
-                    progress: progress,
-                    delay: 0.55,
-                    color: palette.blue,
-                  ),
-                  Transform.translate(
-                    offset: Offset(0, math.sin(phase + 0.6) * 3),
-                    child: Transform.scale(
-                      scale: logoScale,
-                      child: SizedBox(
-                        width: logoSize,
-                        height: logoSize,
-                        child: Image.asset(
-                          'assets/images/easy_ui_logo.png',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
+              Positioned(
+                width: compact ? 220 : 330,
+                height: compact ? 220 : 330,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        palette.surface.withValues(alpha: 0.9),
+                        palette.primary.withValues(alpha: 0.1 + pulse * 0.04),
+                        Colors.transparent,
+                      ],
                     ),
                   ),
-                ],
-              );
-            },
+                ),
+              ),
+              _AssetNode(
+                alignment:
+                    compact
+                        ? const Alignment(-0.88, -0.76)
+                        : const Alignment(-0.8, -0.72),
+                width: nodeWidth,
+                height: nodeHeight,
+                icon: Icons.widgets_outlined,
+                title: '基础组件',
+                description: compact ? 'Button / SVG' : 'Button / Avatar / SVG',
+                color: palette.primary,
+                palette: palette,
+              ),
+              _AssetNode(
+                alignment:
+                    compact
+                        ? const Alignment(0.88, -0.76)
+                        : const Alignment(0.8, -0.72),
+                width: nodeWidth,
+                height: nodeHeight,
+                icon: Icons.table_chart_outlined,
+                title: '数据展示',
+                description: compact ? 'Table / Flow' : 'Table / Flow / Card',
+                color: palette.blue,
+                palette: palette,
+              ),
+              _AssetNode(
+                alignment:
+                    compact
+                        ? const Alignment(-0.88, 0.4)
+                        : const Alignment(-0.84, 0.5),
+                width: nodeWidth,
+                height: nodeHeight,
+                icon: Icons.tune_outlined,
+                title: '数据输入',
+                description:
+                    compact ? 'Form / Select' : 'Form / Select / Picker',
+                color: palette.amber,
+                palette: palette,
+              ),
+              _AssetNode(
+                alignment:
+                    compact
+                        ? const Alignment(0.88, 0.4)
+                        : const Alignment(0.84, 0.5),
+                width: nodeWidth,
+                height: nodeHeight,
+                icon: Icons.campaign_outlined,
+                title: '反馈与 H5',
+                description: compact ? 'Dialog / H5' : 'Dialog / Toast / H5',
+                color: palette.red,
+                palette: palette,
+              ),
+              Transform.scale(
+                scale: 1 + pulse * 0.018,
+                child: _AssetMapCore(
+                  palette: palette,
+                  size: coreSize,
+                  compact: compact,
+                ),
+              ),
+              Align(
+                alignment: const Alignment(0, 0.92),
+                child: _AssetPipeline(palette: palette, compact: compact),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AssetMapCore extends StatelessWidget {
+  const _AssetMapCore({
+    required this.palette,
+    required this.size,
+    required this.compact,
+  });
+
+  final _LandingPalette palette;
+  final double size;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      padding: EdgeInsets.all(compact ? 16 : 22),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        shape: BoxShape.circle,
+        border: Border.all(color: palette.border),
+        boxShadow: [
+          BoxShadow(
+            color: palette.shadow,
+            blurRadius: 28,
+            offset: const Offset(0, 18),
           ),
+        ],
+      ),
+      child: Image.asset('assets/images/easy_ui_logo.png', fit: BoxFit.contain),
+    );
+  }
+}
+
+class _AssetNode extends StatelessWidget {
+  const _AssetNode({
+    required this.alignment,
+    required this.width,
+    required this.height,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.palette,
+  });
+
+  final Alignment alignment;
+  final double width;
+  final double height;
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: alignment,
+      child: Container(
+        width: width,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: palette.surface.withValues(alpha: 0.94),
+          border: Border.all(color: palette.border),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: palette.shadow.withValues(alpha: 0.75),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, size: 18, color: color),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _LandingTypography.bodySmall(palette).copyWith(
+                      color: palette.textStrong,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _LandingTypography.bodySmall(
+                      palette,
+                    ).copyWith(fontSize: 12, height: 1.2),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AssetPipeline extends StatelessWidget {
+  const _AssetPipeline({required this.palette, required this.compact});
+
+  final _LandingPalette palette;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = compact ? ['需求', '索引', '页面'] : ['业务需求', '组件索引', 'Flutter 页面'];
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 12 : 16,
+        vertical: compact ? 8 : 10,
+      ),
+      decoration: BoxDecoration(
+        color: palette.surface.withValues(alpha: 0.9),
+        border: Border.all(color: palette.border),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final entry in items.indexed) ...[
+            if (entry.$1 != 0) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: compact ? 7 : 10),
+                child: Icon(
+                  Icons.arrow_forward,
+                  size: compact ? 13 : 15,
+                  color: palette.textSoft,
+                ),
+              ),
+            ],
+            Text(
+              entry.$2,
+              style: _LandingTypography.bodySmall(palette).copyWith(
+                color:
+                    entry.$1 == items.length - 1
+                        ? palette.primary
+                        : palette.textMuted,
+                fontWeight:
+                    entry.$1 == items.length - 1
+                        ? FontWeight.w800
+                        : FontWeight.w600,
+                fontSize: compact ? 12 : 13,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _OrbitBadge extends StatelessWidget {
-  const _OrbitBadge({
-    required this.alignment,
+class _AssetMapPainter extends CustomPainter {
+  const _AssetMapPainter({
+    required this.palette,
     required this.progress,
-    required this.delay,
-    required this.size,
-    required this.label,
-    required this.assetPath,
+    required this.compact,
   });
-
-  final Alignment alignment;
-  final double progress;
-  final double delay;
-  final double size;
-  final String label;
-  final String assetPath;
-
-  @override
-  Widget build(BuildContext context) {
-    final phase = (progress + delay) * math.pi * 2;
-    final drift = Offset(math.cos(phase) * 5, math.sin(phase) * 6);
-
-    return Align(
-      alignment: alignment,
-      child: Transform.translate(
-        offset: drift,
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: Semantics(
-            image: true,
-            label: label,
-            child: ClipOval(
-              child: Image.asset(
-                assetPath,
-                fit: BoxFit.cover,
-                filterQuality: FilterQuality.high,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SparkDot extends StatelessWidget {
-  const _SparkDot({
-    required this.alignment,
-    required this.progress,
-    required this.delay,
-    required this.color,
-  });
-
-  final Alignment alignment;
-  final double progress;
-  final double delay;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final phase = (progress + delay) * math.pi * 2;
-    final opacity = 0.28 + (math.sin(phase) + 1) * 0.22;
-
-    return Align(
-      alignment: alignment,
-      child: Opacity(
-        opacity: opacity,
-        child: Transform.scale(
-          scale: 0.82 + (math.sin(phase) + 1) * 0.18,
-          child: Container(
-            width: 9,
-            height: 9,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: color.withValues(alpha: 0.36), blurRadius: 14),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LogoOrbitPainter extends CustomPainter {
-  const _LogoOrbitPainter({required this.palette, required this.progress});
 
   final _LandingPalette palette;
   final double progress;
+  final bool compact;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final basePaint =
+    final linePaint =
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1
-          ..color = palette.border.withValues(alpha: 0.78);
+          ..strokeWidth = 1.2
+          ..strokeCap = StrokeCap.round
+          ..color = palette.primary.withValues(alpha: 0.2);
     final activePaint =
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2
           ..strokeCap = StrokeCap.round
-          ..color = palette.primary.withValues(alpha: 0.36);
+          ..color = palette.primary.withValues(alpha: 0.45);
     final dotPaint =
         Paint()
           ..style = PaintingStyle.fill
-          ..color = palette.primary.withValues(alpha: 0.36);
+          ..color = palette.primary.withValues(alpha: 0.5);
 
-    final wideOrbit = Rect.fromCenter(
+    final points = <Offset>[
+      Offset(size.width * 0.21, size.height * 0.2),
+      Offset(size.width * 0.79, size.height * 0.2),
+      Offset(size.width * 0.21, size.height * (compact ? 0.64 : 0.68)),
+      Offset(size.width * 0.79, size.height * (compact ? 0.64 : 0.68)),
+    ];
+
+    for (final point in points) {
+      final control = Offset((center.dx + point.dx) / 2, center.dy);
+      final path =
+          Path()
+            ..moveTo(center.dx, center.dy)
+            ..quadraticBezierTo(control.dx, control.dy, point.dx, point.dy);
+      canvas.drawPath(path, linePaint);
+    }
+
+    final orbit = Rect.fromCenter(
       center: center,
-      width: size.width * 0.72,
-      height: size.height * 0.5,
+      width: size.width * (compact ? 0.56 : 0.42),
+      height: size.height * (compact ? 0.46 : 0.52),
     );
-    final tallOrbit = Rect.fromCenter(
-      center: center,
-      width: size.width * 0.46,
-      height: size.height * 0.72,
-    );
-
-    canvas.drawOval(wideOrbit, basePaint);
-    canvas.drawOval(tallOrbit, basePaint);
-
-    final start = progress * math.pi * 2;
-    canvas.drawArc(wideOrbit, start, math.pi * 0.44, false, activePaint);
+    canvas.drawOval(orbit, linePaint);
     canvas.drawArc(
-      tallOrbit,
-      -start * 0.82,
-      math.pi * 0.36,
+      orbit,
+      progress * math.pi * 2,
+      math.pi * 0.42,
       false,
       activePaint,
     );
 
-    for (final item in [
-      (wideOrbit, start + math.pi * 0.82),
-      (wideOrbit, start + math.pi * 1.56),
-      (tallOrbit, -start + math.pi * 0.34),
-      (tallOrbit, -start + math.pi * 1.22),
-    ]) {
-      final point = Offset(
-        item.$1.center.dx + math.cos(item.$2) * item.$1.width / 2,
-        item.$1.center.dy + math.sin(item.$2) * item.$1.height / 2,
-      );
-      canvas.drawCircle(point, 3.2, dotPaint);
-    }
+    final angle = progress * math.pi * 2;
+    final dot = Offset(
+      orbit.center.dx + math.cos(angle) * orbit.width / 2,
+      orbit.center.dy + math.sin(angle) * orbit.height / 2,
+    );
+    canvas.drawCircle(dot, 4, dotPaint);
   }
 
   @override
-  bool shouldRepaint(covariant _LogoOrbitPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.palette != palette;
+  bool shouldRepaint(covariant _AssetMapPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.palette != palette ||
+        oldDelegate.compact != compact;
   }
 }
 
@@ -833,7 +1065,7 @@ class _FeatureSection extends StatelessWidget {
         icon: Icons.devices_other,
         color: palette.blue,
         title: '全平台支持',
-        description: '支持全平台应用开发中的视图构建。Android、iOS、MacOS、Linux、Windows、Web',
+        description: '一套 Easy UI 组件覆盖移动端、桌面端与 Web，让迁移后的 Flutter 页面保持一致体验。',
       ),
       _FeatureData(
         icon: Icons.widgets_outlined,
@@ -859,38 +1091,455 @@ class _FeatureSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          '功能特性',
+          '把 Flutter 页面迁移，收进一套工作台。',
           textAlign: TextAlign.center,
           style: _LandingTypography.sectionTitle(palette),
         ),
-        const SizedBox(height: 46),
+        const SizedBox(height: 12),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: Text(
+            '跨端支持、组件组合、开放源码和响应式适配，被组织成同一个可以直接验证的 example 流程。',
+            textAlign: TextAlign.center,
+            style: _LandingTypography.body(palette),
+          ),
+        ),
+        const SizedBox(height: 30),
         LayoutBuilder(
           builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final columns =
-                width >= 1060
-                    ? 4
-                    : width >= 700
-                    ? 2
-                    : 1;
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisExtent: 270,
-                mainAxisSpacing: 18,
-                crossAxisSpacing: 18,
+            final compact = constraints.maxWidth < 880;
+            final spotlight = _ViewportFadeIn(
+              child: _FeatureSpotlight(data: items[0], palette: palette),
+            );
+            final supportPanel = _ViewportFadeIn(
+              child: _FeatureSupportPanel(
+                items: items.skip(1).toList(),
+                palette: palette,
               ),
-              itemBuilder:
-                  (context, index) => _ViewportFadeIn(
-                    child: _FeatureCard(data: items[index], palette: palette),
-                  ),
+            );
+
+            if (compact) {
+              return Column(
+                children: [spotlight, const SizedBox(height: 16), supportPanel],
+              );
+            }
+
+            return Table(
+              columnWidths: const {
+                0: FlexColumnWidth(11),
+                1: FixedColumnWidth(16),
+                2: FlexColumnWidth(9),
+              },
+              children: [
+                TableRow(
+                  children: [
+                    TableCell(
+                      verticalAlignment: TableCellVerticalAlignment.top,
+                      child: spotlight,
+                    ),
+                    const SizedBox.shrink(),
+                    TableCell(
+                      verticalAlignment: TableCellVerticalAlignment.fill,
+                      child: supportPanel,
+                    ),
+                  ],
+                ),
+              ],
             );
           },
         ),
       ],
+    );
+  }
+}
+
+class _FeatureSpotlight extends StatelessWidget {
+  const _FeatureSpotlight({required this.data, required this.palette});
+
+  final _FeatureData data;
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final platforms = [
+      _PlatformSupportData(
+        name: 'Android',
+        group: 'Mobile',
+        icon: Icons.android,
+        color: palette.green,
+      ),
+      _PlatformSupportData(
+        name: 'iOS',
+        group: 'Mobile',
+        icon: Icons.phone_iphone,
+        color: palette.blue,
+      ),
+      _PlatformSupportData(
+        name: 'macOS',
+        group: 'Desktop',
+        icon: Icons.desktop_mac,
+        color: palette.primary,
+      ),
+      _PlatformSupportData(
+        name: 'Windows',
+        group: 'Desktop',
+        icon: Icons.desktop_windows,
+        color: palette.blue,
+      ),
+      _PlatformSupportData(
+        name: 'Linux',
+        group: 'Desktop',
+        icon: Icons.terminal,
+        color: palette.amber,
+      ),
+      _PlatformSupportData(
+        name: 'Web',
+        group: 'Browser',
+        icon: Icons.language,
+        color: palette.red,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+        final tight = constraints.maxWidth < 390;
+
+        return Container(
+          constraints: const BoxConstraints(minHeight: 430),
+          padding: EdgeInsets.all(compact ? 22 : 30),
+          decoration: BoxDecoration(
+            color: palette.surface,
+            border: Border.all(color: data.color.withValues(alpha: 0.24)),
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                data.color.withValues(alpha: 0.13),
+                palette.surface,
+                palette.green.withValues(alpha: 0.08),
+              ],
+              stops: const [0, 0.56, 1],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: palette.shadow.withValues(alpha: 0.55),
+                blurRadius: 34,
+                offset: const Offset(0, 18),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: palette.surface.withValues(alpha: 0.86),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: palette.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: palette.shadow,
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Icon(data.icon, color: data.color, size: 32),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CROSS PLATFORM',
+                          style: _LandingTypography.sectionEyebrow(palette),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '一套 Flutter 工程，多端交付',
+                          style: _LandingTypography.bodySmall(
+                            palette,
+                          ).copyWith(color: palette.textMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!tight)
+                    _PlatformCountBadge(
+                      count: platforms.length,
+                      palette: palette,
+                    ),
+                ],
+              ),
+              SizedBox(height: compact ? 24 : 30),
+              Text(
+                data.title,
+                style: _LandingTypography.sectionTitle(palette).copyWith(
+                  color: palette.textStrong,
+                  fontSize: compact ? 31 : 36,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(data.description, style: _LandingTypography.body(palette)),
+              SizedBox(height: compact ? 22 : 26),
+              _PlatformSupportBoard(platforms: platforms, palette: palette),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  _PlatformCapabilityPill(
+                    icon: Icons.layers_outlined,
+                    label: '同一组件 API',
+                    palette: palette,
+                  ),
+                  _PlatformCapabilityPill(
+                    icon: Icons.fit_screen_outlined,
+                    label: '自适应布局',
+                    palette: palette,
+                  ),
+                  _PlatformCapabilityPill(
+                    icon: Icons.verified_outlined,
+                    label: 'Example 可验证',
+                    palette: palette,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PlatformSupportData {
+  const _PlatformSupportData({
+    required this.name,
+    required this.group,
+    required this.icon,
+    required this.color,
+  });
+
+  final String name;
+  final String group;
+  final IconData icon;
+  final Color color;
+}
+
+class _PlatformCountBadge extends StatelessWidget {
+  const _PlatformCountBadge({required this.count, required this.palette});
+
+  final int count;
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.textStrong.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: palette.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Text(
+          '$count targets',
+          style: _LandingTypography.bodySmall(
+            palette,
+          ).copyWith(color: palette.textStrong, fontWeight: FontWeight.w800),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlatformSupportBoard extends StatelessWidget {
+  const _PlatformSupportBoard({required this.platforms, required this.palette});
+
+  final List<_PlatformSupportData> platforms;
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: palette.previewBackground.withValues(alpha: 0.84),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: palette.border),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final columns =
+              constraints.maxWidth < 330
+                  ? 1
+                  : constraints.maxWidth < 540
+                  ? 2
+                  : 3;
+          const gap = 10.0;
+          final tileWidth =
+              (constraints.maxWidth - gap * (columns - 1)) / columns;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: palette.surface.withValues(alpha: 0.86),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: palette.border),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.device_hub_outlined,
+                      color: palette.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Easy UI adaptive component layer',
+                        style: _LandingTypography.bodySmall(palette).copyWith(
+                          color: palette.textStrong,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children:
+                    platforms
+                        .map(
+                          (platform) => SizedBox(
+                            width: tileWidth,
+                            child: _PlatformTargetTile(
+                              data: platform,
+                              palette: palette,
+                            ),
+                          ),
+                        )
+                        .toList(),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PlatformTargetTile extends StatelessWidget {
+  const _PlatformTargetTile({required this.data, required this.palette});
+
+  final _PlatformSupportData data;
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 74,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: data.color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: data.color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: palette.surface.withValues(alpha: 0.82),
+              shape: BoxShape.circle,
+              border: Border.all(color: data.color.withValues(alpha: 0.24)),
+            ),
+            child: Icon(data.icon, color: data.color, size: 19),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: _LandingTypography.bodySmall(palette).copyWith(
+                    color: palette.textStrong,
+                    fontWeight: FontWeight.w800,
+                    height: 1.18,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  data.group,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: _LandingTypography.bodySmall(
+                    palette,
+                  ).copyWith(fontSize: 12, height: 1.2),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlatformCapabilityPill extends StatelessWidget {
+  const _PlatformCapabilityPill({
+    required this.icon,
+    required this.label,
+    required this.palette,
+  });
+
+  final IconData icon;
+  final String label;
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.surface.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: palette.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: palette.primary, size: 16),
+            const SizedBox(width: 7),
+            Text(label, style: _LandingTypography.bodySmall(palette)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -907,7 +1556,7 @@ class _AiSkillSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: palette.surface,
           border: Border.all(color: palette.border),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(28),
         ),
         padding: const EdgeInsets.all(28),
         child: LayoutBuilder(
@@ -997,15 +1646,15 @@ class _AiSkillInstallPanel extends StatelessWidget {
       children: [
         Material(
           color: palette.codeBackground,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: copyInstallCommand,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(18),
             mouseCursor: SystemMouseCursors.click,
             child: Ink(
               decoration: BoxDecoration(
                 color: palette.codeBackground,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: palette.borderStrong.withValues(alpha: 0.35),
                 ),
@@ -1188,12 +1837,12 @@ EasyStatusIndicator 标记订单状态
 
     return Material(
       color: palette.codeBackground,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: palette.codeBackground,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: palette.borderStrong.withValues(alpha: 0.35),
           ),
@@ -1207,7 +1856,7 @@ EasyStatusIndicator 标记订单状态
               decoration: BoxDecoration(
                 color: palette.surface.withValues(alpha: 0.07),
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(8),
+                  top: Radius.circular(18),
                 ),
                 border: Border(
                   bottom: BorderSide(
@@ -1820,70 +2469,174 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _FeatureCard extends StatefulWidget {
-  const _FeatureCard({required this.data, required this.palette});
+class _FeatureSupportPanel extends StatelessWidget {
+  const _FeatureSupportPanel({required this.items, required this.palette});
 
-  final _FeatureData data;
+  final List<_FeatureData> items;
   final _LandingPalette palette;
 
   @override
-  State<_FeatureCard> createState() => _FeatureCardState();
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 430),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        border: Border.all(color: palette.border),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'BUILDING BLOCKS',
+            style: _LandingTypography.sectionEyebrow(palette),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '迁移后的页面能力栈',
+            style: _LandingTypography.contentTitle(
+              palette,
+            ).copyWith(fontSize: 22),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '从组件选择到源码落地，再到不同屏幕的响应式表现，右侧三项承担页面交付的工程闭环。',
+            style: _LandingTypography.bodySmall(
+              palette,
+            ).copyWith(color: palette.textMuted),
+          ),
+          const SizedBox(height: 22),
+          Container(
+            decoration: BoxDecoration(
+              color: palette.previewBackground.withValues(alpha: 0.58),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: palette.border),
+            ),
+            child: Column(
+              children:
+                  items.indexed.map((entry) {
+                    final index = entry.$1;
+                    final item = entry.$2;
+                    return _FeatureSupportRow(
+                      index: index,
+                      data: item,
+                      palette: palette,
+                      showDivider: index != items.length - 1,
+                    );
+                  }).toList(),
+            ),
+          ),
+          const SizedBox(height: 18),
+          _FeatureSupportFooter(palette: palette),
+        ],
+      ),
+    );
+  }
 }
 
-class _FeatureCardState extends State<_FeatureCard> {
-  bool _hovered = false;
+class _FeatureSupportRow extends StatelessWidget {
+  const _FeatureSupportRow({
+    required this.index,
+    required this.data,
+    required this.palette,
+    required this.showDivider,
+  });
+
+  final int index;
+  final _FeatureData data;
+  final _LandingPalette palette;
+  final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
-    final palette = widget.palette;
-    return MouseRegion(
-      cursor: SystemMouseCursors.basic,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 30),
-        transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
-        decoration: BoxDecoration(
-          color: palette.surface,
-          border: Border.all(
-            color: _hovered ? widget.data.color : palette.border,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          boxShadow:
-              _hovered
-                  ? [
-                    BoxShadow(
-                      color: palette.shadow,
-                      blurRadius: 22,
-                      offset: const Offset(0, 12),
-                    ),
-                  ]
-                  : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border:
+            showDivider
+                ? Border(bottom: BorderSide(color: palette.border))
+                : null,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              widget.data.icon,
-              color: widget.data.color,
-              size: 52,
-              opticalSize: 52,
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: data.color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+                border: Border.all(color: data.color.withValues(alpha: 0.18)),
+              ),
+              child: Icon(
+                data.icon,
+                color: data.color,
+                size: 23,
+                opticalSize: 23,
+              ),
             ),
-            const SizedBox(height: 26),
-            Text(
-              widget.data.title,
-              textAlign: TextAlign.center,
-              style: _LandingTypography.contentTitle(palette),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '0${index + 1}',
+                    style: _LandingTypography.bodySmall(palette).copyWith(
+                      color: data.color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    data.title,
+                    style: _LandingTypography.contentTitle(palette),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    data.description,
+                    style: _LandingTypography.bodySmall(palette),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 18),
-            Text(
-              widget.data.description,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: _LandingTypography.bodySmall(palette),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeatureSupportFooter extends StatelessWidget {
+  const _FeatureSupportFooter({required this.palette});
+
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.textStrong.withValues(alpha: 0.045),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: palette.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Icon(Icons.route_outlined, color: palette.primary, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '从组件资产图谱进入，每个能力都能回到 example 中验证。',
+                style: _LandingTypography.bodySmall(
+                  palette,
+                ).copyWith(color: palette.textMuted),
+              ),
             ),
           ],
         ),
@@ -1953,7 +2706,7 @@ class _CategoryRail extends StatelessWidget {
         decoration: BoxDecoration(
           color: palette.surface,
           border: Border.all(color: palette.border),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           children:
@@ -2033,21 +2786,6 @@ class _CategoryRow extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _WindowDot extends StatelessWidget {
-  const _WindowDot({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }
@@ -2158,47 +2896,47 @@ class _LandingPalette {
   static _LandingPalette resolve(bool isDark) {
     if (isDark) {
       return const _LandingPalette(
-        background: Color(0xFF101820),
-        heroBackground: Color(0xFF111C25),
-        surface: Color(0xFF17232E),
-        footer: Color(0xFF15212B),
-        previewBackground: Color(0xFF111B24),
-        codeBackground: Color(0xFF0B1219),
-        textStrong: Color(0xFFE9F3F1),
-        textMuted: Color(0xFFAAB8B9),
-        textSoft: Color(0xFF75868A),
+        background: Color(0xFF0F1916),
+        heroBackground: Color(0xFF111E1A),
+        surface: Color(0xFF172620),
+        footer: Color(0xFF13211D),
+        previewBackground: Color(0xFF10201B),
+        codeBackground: Color(0xFF07120F),
+        textStrong: Color(0xFFEAF6F1),
+        textMuted: Color(0xFFADBCB6),
+        textSoft: Color(0xFF7D9088),
         codeText: Color(0xFF9DE7CB),
-        primary: Color(0xFF31DA9F),
+        primary: Color(0xFF4EE0A5),
         onPrimary: Color(0xFF072016),
-        border: Color(0xFF263744),
-        borderStrong: Color(0xFF3C5262),
+        border: Color(0xFF253A33),
+        borderStrong: Color(0xFF416257),
         shadow: Color(0x66060B10),
-        blue: Color(0xFF58A6FF),
-        green: Color(0xFF31DA9F),
-        amber: Color(0xFFF4BE59),
-        red: Color(0xFFFF7474),
+        blue: Color(0xFF7AB7FF),
+        green: Color(0xFF4EE0A5),
+        amber: Color(0xFFE8B04E),
+        red: Color(0xFFFF817A),
       );
     }
     return const _LandingPalette(
-      background: Color(0xFFF7FAFC),
-      heroBackground: Color(0xFFFBFDFE),
-      surface: Color(0xFFFFFFFF),
-      footer: Color(0xFFF1F6F7),
-      previewBackground: Color(0xFFF8FBFC),
-      codeBackground: Color(0xFF13202F),
-      textStrong: Color(0xFF13202F),
-      textMuted: Color(0xFF5E6B72),
-      textSoft: Color(0xFF8A989E),
-      codeText: Color(0xFFC7F7E7),
-      primary: Color(0xFF17A779),
-      onPrimary: Color(0xFFFFFFFF),
-      border: Color(0xFFE0E8EC),
-      borderStrong: Color(0xFFB7C7CD),
-      shadow: Color(0x1A13202F),
-      blue: Color(0xFF1484FC),
-      green: Color(0xFF17A779),
-      amber: Color(0xFFD8941A),
-      red: Color(0xFFE45D5D),
+      background: Color(0xFFF3F8F5),
+      heroBackground: Color(0xFFFAFCF8),
+      surface: Color(0xFFFEFFFD),
+      footer: Color(0xFFEEF5F1),
+      previewBackground: Color(0xFFF0F7F3),
+      codeBackground: Color(0xFF10231E),
+      textStrong: Color(0xFF10231E),
+      textMuted: Color(0xFF52665E),
+      textSoft: Color(0xFF84968E),
+      codeText: Color(0xFFBDF7DD),
+      primary: Color(0xFF0B8F66),
+      onPrimary: Color(0xFFF7FFFB),
+      border: Color(0xFFD9E8DE),
+      borderStrong: Color(0xFFAEC5B8),
+      shadow: Color(0x1F10231E),
+      blue: Color(0xFF2B77E5),
+      green: Color(0xFF0B8F66),
+      amber: Color(0xFFC78517),
+      red: Color(0xFFD85C5C),
     );
   }
 }
