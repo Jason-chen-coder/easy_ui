@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../easy_ui.dart';
+import '../l10n/gen/easy_ui_localizations.dart';
 import './enhanced_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -10,6 +11,7 @@ class PopupDateTimePicker extends StatefulWidget {
   final VoidCallback? onClear;
   final String? placeholder;
   final TextStyle? textStyle;
+  final TextStyle? activeTextStyle;
   final BoxDecoration? decoration;
   final EdgeInsetsGeometry? padding;
   final double? width;
@@ -17,6 +19,8 @@ class PopupDateTimePicker extends StatefulWidget {
   final DateTime? initialDateTime;
   final DateTime? initialStartDateTime;
   final DateTime? initialEndDateTime;
+  final String? startDateHintText;
+  final String? endDateHintText;
 
   /// 是否禁止选择时间，只允许选择日期
   final bool onlyPickDate;
@@ -29,6 +33,7 @@ class PopupDateTimePicker extends StatefulWidget {
     this.onClear,
     this.placeholder,
     this.textStyle,
+    this.activeTextStyle,
     this.decoration,
     this.padding,
     this.width,
@@ -36,6 +41,8 @@ class PopupDateTimePicker extends StatefulWidget {
     this.initialDateTime,
     this.initialStartDateTime,
     this.initialEndDateTime,
+    this.startDateHintText,
+    this.endDateHintText,
     this.onlyPickDate = false,
   });
 
@@ -177,15 +184,16 @@ class _PopupDateTimePickerState extends State<PopupDateTimePicker>
         }
         return Text(
           str,
-          style:
-              widget.textStyle ??
-              TextStyle(
-                fontSize: 14,
-                color:
-                    _selectedSingleDateTime != null
-                        ? theme.neutral66
-                        : theme.neutral99,
-              ),
+          style: _resolveTextStyle(
+            isActive: _selectedSingleDateTime != null,
+            defaultStyle: TextStyle(
+              fontSize: 14,
+              color:
+                  _selectedSingleDateTime != null
+                      ? theme.neutral66
+                      : theme.neutral99,
+            ),
+          ),
           overflow: TextOverflow.ellipsis,
         );
       case DateTimePickerMode.range:
@@ -195,15 +203,16 @@ class _PopupDateTimePickerState extends State<PopupDateTimePicker>
         if (widget.placeholder != null) {
           return Text(
             widget.placeholder!,
-            style:
-                widget.textStyle ??
-                TextStyle(
-                  fontSize: 14,
-                  color:
-                      (startDateTimeSelected && endDateTimeSelected)
-                          ? theme.neutral66
-                          : theme.neutral99,
-                ),
+            style: _resolveTextStyle(
+              isActive: startDateTimeSelected && endDateTimeSelected,
+              defaultStyle: TextStyle(
+                fontSize: 14,
+                color:
+                    (startDateTimeSelected && endDateTimeSelected)
+                        ? theme.neutral66
+                        : theme.neutral99,
+              ),
+            ),
             overflow: TextOverflow.ellipsis,
           );
         }
@@ -213,13 +222,13 @@ class _PopupDateTimePickerState extends State<PopupDateTimePicker>
                 ? DateFormat(
                   widget.onlyPickDate ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm',
                 ).format(_selectedStartDateTime!)
-                : l10n.startDate;
+                : widget.startDateHintText ?? l10n.startDate;
         final endStr =
             endDateTimeSelected
                 ? DateFormat(
                   widget.onlyPickDate ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm',
                 ).format(_selectedEndDateTime!)
-                : l10n.endDate;
+                : widget.endDateHintText ?? l10n.endDate;
         return Center(
           child: Text.rich(
             TextSpan(
@@ -236,34 +245,46 @@ class _PopupDateTimePickerState extends State<PopupDateTimePicker>
                 ),
                 TextSpan(
                   text: endStr,
-                  style:
-                      widget.textStyle ??
-                      TextStyle(
-                        fontSize:
-                            !widget.onlyPickDate && startDateTimeSelected
-                                ? 12
-                                : 16,
-                        color:
-                            startDateTimeSelected
-                                ? theme.neutral66
-                                : theme.neutral99,
-                        height: 1,
-                      ),
+                  style: _resolveTextStyle(
+                    isActive: endDateTimeSelected,
+                    defaultStyle: TextStyle(
+                      fontSize:
+                          !widget.onlyPickDate && startDateTimeSelected
+                              ? 12
+                              : 16,
+                      color:
+                          startDateTimeSelected
+                              ? theme.neutral66
+                              : theme.neutral99,
+                      height: 1,
+                    ),
+                  ),
                 ),
               ],
-              style:
-                  widget.textStyle ??
-                  TextStyle(
-                    fontSize:
-                        !widget.onlyPickDate && endDateTimeSelected ? 12 : 16,
-                    color:
-                        endDateTimeSelected ? theme.neutral66 : theme.neutral99,
-                    height: 1,
-                  ),
+              style: _resolveTextStyle(
+                isActive: startDateTimeSelected,
+                defaultStyle: TextStyle(
+                  fontSize:
+                      !widget.onlyPickDate && endDateTimeSelected ? 12 : 16,
+                  color:
+                      endDateTimeSelected ? theme.neutral66 : theme.neutral99,
+                  height: 1,
+                ),
+              ),
             ),
           ),
         );
     }
+  }
+
+  TextStyle _resolveTextStyle({
+    required bool isActive,
+    required TextStyle defaultStyle,
+  }) {
+    if (isActive && widget.activeTextStyle != null) {
+      return widget.activeTextStyle!;
+    }
+    return widget.textStyle ?? defaultStyle;
   }
 
   Widget _buildTrailingIcon() {
@@ -501,15 +522,17 @@ class EasyPopupSingleDateTimePicker extends PopupDateTimePicker {
     super.onClear,
     super.placeholder,
     super.textStyle,
+    super.activeTextStyle,
     super.decoration,
     super.padding,
     super.width,
     super.height,
     super.onlyPickDate = false,
-    super.initialDateTime,
+    DateTime? initialDateTime,
   }) : super(
          mode: DateTimePickerMode.single,
          onSingleConfirm: onConfirm,
+         initialDateTime: initialDateTime,
        );
 }
 
@@ -517,18 +540,24 @@ class EasyPopupRangeDateTimePicker extends PopupDateTimePicker {
   const EasyPopupRangeDateTimePicker({
     super.key,
     required void Function(DateTime startDateTime, DateTime endDateTime)
-    super.onConfirm,
+    onConfirm,
     super.onClear,
     super.placeholder,
     super.textStyle,
+    super.activeTextStyle,
     super.decoration,
     super.padding,
     super.width,
     super.height,
     super.onlyPickDate = false,
-    super.initialStartDateTime,
-    super.initialEndDateTime,
+    super.startDateHintText,
+    super.endDateHintText,
+    DateTime? initialStartDateTime,
+    DateTime? initialEndDateTime,
   }) : super(
          mode: DateTimePickerMode.range,
+         onConfirm: onConfirm,
+         initialStartDateTime: initialStartDateTime,
+         initialEndDateTime: initialEndDateTime,
        );
 }

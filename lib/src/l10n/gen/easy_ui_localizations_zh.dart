@@ -232,6 +232,73 @@ class EasyUiLocalizationsZh extends EasyUiLocalizations {
 
   @override
   String get actionBackToTop => '回到顶部';
+
+  @override
+  String get selectSaveLocation => '选择保存位置';
+
+  @override
+  String fileSavedTo(String filePath) {
+    return '文件已保存到: $filePath';
+  }
+
+  @override
+  String downloadFailed(String error) {
+    return '下载失败: $error';
+  }
+
+  @override
+  String get downloadRequestFailed => '下载请求失败';
+
+  @override
+  String get downloadBlobUrlUnsupported => '检测到 Blob URL，无法直接下载。请在 H5 中使用 as.downloadBlob 方法。';
+
+  @override
+  String sourceFileNotFound(String path) {
+    return '源文件不存在: $path';
+  }
+
+  @override
+  String get g99CycleQc => 'Cycle QC';
+
+  @override
+  String get g99LaneQc => 'Lane QC';
+
+  @override
+  String get g99SampleQc => 'Sample QC';
+
+  @override
+  String get g99SequenceSummary => 'Sequence Summary';
+
+  @override
+  String get g99Index => '序号';
+
+  @override
+  String get g99SampleCode => '样本编号';
+
+  @override
+  String g99StartTime(String time) {
+    return '开始时间： $time';
+  }
+
+  @override
+  String g99EndTime(String time) {
+    return '结束时间： $time';
+  }
+
+  @override
+  String get g99SequencingQcExampleTitle => 'G99 Sequencing QC 组件示例';
+
+  @override
+  String get g99SequencingQcExampleDescription => '展示 G99 测序质控数据的 Cycle QC、Lane QC、Sample QC 和 Sequence Summary。';
+
+  @override
+  String get g99SequencingQcMockDataCoverageTitle => 'Mock 数据覆盖范围';
+
+  @override
+  String get g99SequencingQcMockDataCoverageDescription => '当前示例包含 12 个 cycle 的曲线数据、4 条 Lane QC、3 条 Sample QC，以及 2 个 summary lane。';
+
+  @override
+  String get comingSoon => '敬请期待';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -462,4 +529,71 @@ class EasyUiLocalizationsZhHant extends EasyUiLocalizationsZh {
 
   @override
   String get actionBackToTop => '回到頂部';
+
+  @override
+  String get selectSaveLocation => '選擇保存位置';
+
+  @override
+  String fileSavedTo(String filePath) {
+    return '文件已保存到: $filePath';
+  }
+
+  @override
+  String downloadFailed(String error) {
+    return '下載失敗: $error';
+  }
+
+  @override
+  String get downloadRequestFailed => '下載請求失敗';
+
+  @override
+  String get downloadBlobUrlUnsupported => '檢測到 Blob URL，無法直接下載。請在 H5 中使用 as.downloadBlob 方法。';
+
+  @override
+  String sourceFileNotFound(String path) {
+    return '源文件不存在: $path';
+  }
+
+  @override
+  String get g99CycleQc => 'Cycle QC';
+
+  @override
+  String get g99LaneQc => 'Lane QC';
+
+  @override
+  String get g99SampleQc => 'Sample QC';
+
+  @override
+  String get g99SequenceSummary => 'Sequence Summary';
+
+  @override
+  String get g99Index => '序號';
+
+  @override
+  String get g99SampleCode => '樣本編號';
+
+  @override
+  String g99StartTime(String time) {
+    return '開始時間： $time';
+  }
+
+  @override
+  String g99EndTime(String time) {
+    return '結束時間： $time';
+  }
+
+  @override
+  String get g99SequencingQcExampleTitle => 'G99 Sequencing QC 組件示例';
+
+  @override
+  String get g99SequencingQcExampleDescription => '展示 G99 測序質控數據的 Cycle QC、Lane QC、Sample QC 和 Sequence Summary。';
+
+  @override
+  String get g99SequencingQcMockDataCoverageTitle => 'Mock 數據覆蓋範圍';
+
+  @override
+  String get g99SequencingQcMockDataCoverageDescription => '當前示例包含 12 個 cycle 的曲線數據、4 條 Lane QC、3 條 Sample QC，以及 2 個 summary lane。';
+
+  @override
+  String get comingSoon => '敬請期待';
 }

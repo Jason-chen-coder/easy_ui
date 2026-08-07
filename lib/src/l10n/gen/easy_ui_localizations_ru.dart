@@ -232,4 +232,71 @@ class EasyUiLocalizationsRu extends EasyUiLocalizations {
 
   @override
   String get actionBackToTop => 'Наверх';
+
+  @override
+  String get selectSaveLocation => 'Выберите место сохранения';
+
+  @override
+  String fileSavedTo(String filePath) {
+    return 'Файл сохранен в: $filePath';
+  }
+
+  @override
+  String downloadFailed(String error) {
+    return 'Не удалось загрузить: $error';
+  }
+
+  @override
+  String get downloadRequestFailed => 'Не удалось выполнить запрос на загрузку';
+
+  @override
+  String get downloadBlobUrlUnsupported => 'Blob URL нельзя загрузить напрямую. В H5 используйте метод as.downloadBlob.';
+
+  @override
+  String sourceFileNotFound(String path) {
+    return 'Исходный файл не найден: $path';
+  }
+
+  @override
+  String get g99CycleQc => 'Контроль качества циклов';
+
+  @override
+  String get g99LaneQc => 'Контроль качества Lane';
+
+  @override
+  String get g99SampleQc => 'Контроль качества образцов';
+
+  @override
+  String get g99SequenceSummary => 'Сводка секвенирования';
+
+  @override
+  String get g99Index => '№';
+
+  @override
+  String get g99SampleCode => 'Код образца';
+
+  @override
+  String g99StartTime(String time) {
+    return 'Время начала: $time';
+  }
+
+  @override
+  String g99EndTime(String time) {
+    return 'Время окончания: $time';
+  }
+
+  @override
+  String get g99SequencingQcExampleTitle => 'Пример G99 Sequencing QC';
+
+  @override
+  String get g99SequencingQcExampleDescription => 'Отображает данные контроля качества секвенирования G99 для Cycle QC, Lane QC, Sample QC и Sequence Summary.';
+
+  @override
+  String get g99SequencingQcMockDataCoverageTitle => 'Покрытие mock-данных';
+
+  @override
+  String get g99SequencingQcMockDataCoverageDescription => 'Пример содержит данные кривых для 12 циклов, 4 строки Lane QC, 3 строки Sample QC и 2 summary lane.';
+
+  @override
+  String get comingSoon => 'Скоро';
 }

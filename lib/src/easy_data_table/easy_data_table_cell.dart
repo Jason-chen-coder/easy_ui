@@ -105,7 +105,15 @@ class EasyDataTableTextCell extends StatelessWidget {
     child = Container(padding: padding, alignment: alignment, child: child);
 
     if (onTap != null) {
-      child = InkWell(onTap: onTap, child: child);
+      child = InkWell(
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        onTap: onTap,
+        child: child,
+      );
     }
 
     return child;

@@ -523,6 +523,120 @@ abstract class EasyUiLocalizations {
   /// In zh, this message translates to:
   /// **'回到顶部'**
   String get actionBackToTop;
+
+  /// No description provided for @selectSaveLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择保存位置'**
+  String get selectSaveLocation;
+
+  /// No description provided for @fileSavedTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已保存到: {filePath}'**
+  String fileSavedTo(String filePath);
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载失败: {error}'**
+  String downloadFailed(String error);
+
+  /// No description provided for @downloadRequestFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载请求失败'**
+  String get downloadRequestFailed;
+
+  /// No description provided for @downloadBlobUrlUnsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到 Blob URL，无法直接下载。请在 H5 中使用 as.downloadBlob 方法。'**
+  String get downloadBlobUrlUnsupported;
+
+  /// No description provided for @sourceFileNotFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'源文件不存在: {path}'**
+  String sourceFileNotFound(String path);
+
+  /// No description provided for @g99CycleQc.
+  ///
+  /// In zh, this message translates to:
+  /// **'Cycle QC'**
+  String get g99CycleQc;
+
+  /// No description provided for @g99LaneQc.
+  ///
+  /// In zh, this message translates to:
+  /// **'Lane QC'**
+  String get g99LaneQc;
+
+  /// No description provided for @g99SampleQc.
+  ///
+  /// In zh, this message translates to:
+  /// **'Sample QC'**
+  String get g99SampleQc;
+
+  /// No description provided for @g99SequenceSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'Sequence Summary'**
+  String get g99SequenceSummary;
+
+  /// No description provided for @g99Index.
+  ///
+  /// In zh, this message translates to:
+  /// **'序号'**
+  String get g99Index;
+
+  /// No description provided for @g99SampleCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'样本编号'**
+  String get g99SampleCode;
+
+  /// No description provided for @g99StartTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始时间： {time}'**
+  String g99StartTime(String time);
+
+  /// No description provided for @g99EndTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'结束时间： {time}'**
+  String g99EndTime(String time);
+
+  /// No description provided for @g99SequencingQcExampleTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'G99 Sequencing QC 组件示例'**
+  String get g99SequencingQcExampleTitle;
+
+  /// No description provided for @g99SequencingQcExampleDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'展示 G99 测序质控数据的 Cycle QC、Lane QC、Sample QC 和 Sequence Summary。'**
+  String get g99SequencingQcExampleDescription;
+
+  /// No description provided for @g99SequencingQcMockDataCoverageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Mock 数据覆盖范围'**
+  String get g99SequencingQcMockDataCoverageTitle;
+
+  /// No description provided for @g99SequencingQcMockDataCoverageDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前示例包含 12 个 cycle 的曲线数据、4 条 Lane QC、3 条 Sample QC，以及 2 个 summary lane。'**
+  String get g99SequencingQcMockDataCoverageDescription;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'敬请期待'**
+  String get comingSoon;
 }
 
 class _EasyUiLocalizationsDelegate extends LocalizationsDelegate<EasyUiLocalizations> {

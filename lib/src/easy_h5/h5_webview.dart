@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 import 'package:easy_ui/src/easy_utils/easy_tool_kit.dart';
 import 'package:easy_ui/easy_ui.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -78,7 +80,7 @@ class H5WebView extends StatefulWidget {
   final void Function(LocalhostProxyEvent event)? onProxyEvent;
 
   const H5WebView({
-    super.key,
+    Key? key,
     required this.appName,
     required this.nameEn,
     required this.nameZh,
@@ -97,7 +99,7 @@ class H5WebView extends StatefulWidget {
     this.proxyRules,
     this.isolated = true,
     this.onProxyEvent,
-  });
+  }) : super(key: key);
 
   @override
   H5WebViewState createState() => H5WebViewState();
@@ -203,9 +205,9 @@ class H5WebViewState extends State<H5WebView> {
     });
     _applyUploadParams(widget.uploadParams);
     if (widget.extraBridgeMethods.isNotEmpty) {
-      for (var element in widget.extraBridgeMethods) {
+      widget.extraBridgeMethods.forEach((element) {
         widget.bridge.register(element);
-      }
+      });
     }
     if (_controller != null && _initialUrl != null) {
       await _controller!.loadUrl(
@@ -219,7 +221,7 @@ class H5WebViewState extends State<H5WebView> {
     print("_applyUploadParams params===>${params.toString()}");
     print("_applyUploadParams bridge===>${widget.bridge}");
     final bridge = widget.bridge;
-    if (params == null) return;
+    if (bridge == null || params == null) return;
     widget.bridge.register(
       BridgeMethodSpec(
         method: 'as.getRichEditorUploadParams',
@@ -270,13 +272,15 @@ class H5WebViewState extends State<H5WebView> {
   }
 
   /// 使用原生 HttpClient 下载文件，绕过 Dio 的 IOHttpClientAdapter 限制
-  Future<void> _downloadFile(String urlString, String outputFilePath) async {
+  Future<void> _downloadFile(
+    String urlString,
+    String outputFilePath,
+    EasyUiLocalizations l10n,
+  ) async {
     try {
       // 检查是否是 blob URL
       if (urlString.startsWith('blob:')) {
-        throw Exception(
-          "检测到 Blob URL，无法直接下载。请在 H5 中使用以下方式：await AppBridge.invoke('as.downloadBlob', [{ base64: 'data:...', filename: 'your-file.xlsx' }]",
-        );
+        throw Exception(l10n.downloadBlobUrlUnsupported);
       }
 
       // 处理 file:// 协议的URL
@@ -287,7 +291,7 @@ class H5WebViewState extends State<H5WebView> {
 
         final sourceFile = File(sourcePath);
         if (!await sourceFile.exists()) {
-          throw Exception('源文件不存在: $sourcePath');
+          throw Exception(l10n.sourceFileNotFound(sourcePath));
         }
 
         // 直接复制文件
@@ -310,7 +314,7 @@ class H5WebViewState extends State<H5WebView> {
       final response = await request.close();
 
       if (response.statusCode != 200) {
-        throw Exception("Download failed");
+        throw Exception(l10n.downloadRequestFailed);
       }
 
       final file = File(outputFilePath);
@@ -324,7 +328,7 @@ class H5WebViewState extends State<H5WebView> {
         sink.add(chunk);
         receivedBytes += chunk.length;
         final progress = (receivedBytes / totalBytes * 100).toStringAsFixed(1);
-        ErrorHandler.instance.logInfo("下载进度: $progress%");
+        ErrorHandler.instance.logInfo("下载进度: ${progress}%");
       });
 
       await sink.close();
@@ -339,9 +343,141 @@ class H5WebViewState extends State<H5WebView> {
     }
   }
 
+  /// Android 通过系统保存面板写入文件，需要先把下载内容交给 FilePicker。
+  Future<Uint8List> _downloadFileBytes(
+    String urlString,
+    EasyUiLocalizations l10n,
+  ) async {
+    if (urlString.startsWith('blob:')) {
+      throw Exception(l10n.downloadBlobUrlUnsupported);
+    }
+
+    if (urlString.startsWith('file://')) {
+      final uri = Uri.parse(urlString);
+      final sourceFile = File(uri.toFilePath());
+      if (!await sourceFile.exists()) {
+        throw Exception(l10n.sourceFileNotFound(sourceFile.path));
+      }
+      return sourceFile.readAsBytes();
+    }
+
+    final uri = Uri.parse(urlString);
+    final client = HttpClient();
+    client.badCertificateCallback = (cert, host, port) => true;
+
+    try {
+      final request = await client.getUrl(uri);
+      final response = await request.close();
+
+      if (response.statusCode != 200) {
+        throw Exception(l10n.downloadRequestFailed);
+      }
+
+      return await consolidateHttpClientResponseBytes(response);
+    } finally {
+      client.close();
+    }
+  }
+
+  Future<void> _handleNativeFileDrop(DropDoneDetails details) async {
+    final controller = _controller;
+    if (controller == null || details.files.isEmpty) return;
+
+    final files = <Map<String, dynamic>>[];
+    for (final item in details.files) {
+      if (item is DropItemDirectory) {
+        ErrorHandler.instance.logWarn(
+          '[H5WebView] Directory drop is not supported: ${item.path}',
+        );
+        continue;
+      }
+
+      try {
+        final fileName =
+            item.name.isNotEmpty ? item.name : p.basename(item.path);
+        final bytes = await item.readAsBytes();
+        final modifiedAt = await item.lastModified();
+
+        files.add({
+          'name': fileName,
+          'mimeType':
+              item.mimeType?.isNotEmpty == true
+                  ? item.mimeType
+                  : getMimeType(fileName),
+          'size': bytes.length,
+          'lastModified': modifiedAt.millisecondsSinceEpoch,
+          'base64': base64Encode(bytes),
+        });
+      } catch (e, stack) {
+        ErrorHandler.instance.logError(
+          '[H5WebView] Failed to prepare dropped file: $e\n$stack',
+        );
+      }
+    }
+
+    if (files.isEmpty) return;
+
+    await _dispatchFileDropToPage(
+      localPosition: details.localPosition,
+      files: files,
+    );
+  }
+
+  Future<void> _dispatchDragStateToPage({
+    required String type,
+    required Offset localPosition,
+  }) async {
+    final controller = _controller;
+    if (controller == null) return;
+
+    try {
+      await controller.callAsyncJavaScript(
+        functionBody: _nativeDragEventScript,
+        arguments: {
+          'payload': {
+            'type': type,
+            'clientX': localPosition.dx,
+            'clientY': localPosition.dy,
+            'files': const <Map<String, dynamic>>[],
+          },
+        },
+      );
+    } catch (e) {
+      ErrorHandler.instance.logWarn(
+        '[H5WebView] Failed to dispatch $type event: $e',
+      );
+    }
+  }
+
+  Future<void> _dispatchFileDropToPage({
+    required Offset localPosition,
+    required List<Map<String, dynamic>> files,
+  }) async {
+    final controller = _controller;
+    if (controller == null) return;
+
+    try {
+      await controller.callAsyncJavaScript(
+        functionBody: _nativeDragEventScript,
+        arguments: {
+          'payload': {
+            'type': 'drop',
+            'clientX': localPosition.dx,
+            'clientY': localPosition.dy,
+            'files': files,
+          },
+        },
+      );
+    } catch (e, stack) {
+      ErrorHandler.instance.logError(
+        '[H5WebView] Failed to dispatch dropped files to page: $e\n$stack',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final easyTheme = EasyTheme.of(context);
+    final alabTheme = EasyTheme.of(context);
     // show a placeholder while computing the initial URL / starting server
     bool showH5Page = _progress >= 100 || _isLoaded;
     Widget loadingWidget = Center(
@@ -350,7 +486,7 @@ class H5WebViewState extends State<H5WebView> {
         height: 40,
         child: CircularProgressIndicator(
           strokeWidth: 4,
-          color: easyTheme.primaryGreen,
+          color: alabTheme.primaryGreen,
         ),
       ),
     );
@@ -370,7 +506,7 @@ class H5WebViewState extends State<H5WebView> {
                 height: 80,
                 child: CircularProgressIndicator(
                   strokeWidth: 4,
-                  color: easyTheme.primaryGreen,
+                  color: alabTheme.primaryGreen,
                 ),
               ),
             ),
@@ -397,160 +533,188 @@ class H5WebViewState extends State<H5WebView> {
         ),
       );
     }
+    Widget webView = SafeInAppWebview(
+      key: _webViewKey,
+      initialUrlRequest: URLRequest(url: WebUri(_initialUrl!)),
+      initialSettings: InAppWebViewSettings(
+        javaScriptEnabled: true,
+        useOnLoadResource: true,
+        useShouldOverrideUrlLoading: true,
+        allowUniversalAccessFromFileURLs: true,
+        allowFileAccessFromFileURLs: true,
+        allowsInlineMediaPlayback: true,
+        useWideViewPort: true,
+        mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+        clearCache: false,
+        cacheEnabled: true,
+        domStorageEnabled: true,
+        databaseEnabled: true,
+        supportZoom: false,
+        isInspectable: kDebugMode,
+        useHybridComposition: true,
+      ),
+      initialUserScripts: UnmodifiableListView<UserScript>([
+        widget.bridge.userScript,
+      ]),
+      onProgressChanged: (controller, progress) {
+        setState(() {
+          _progress = progress;
+        });
+      },
+      onDownloadStartRequest: (controller, request) async {
+        _handleDownloadRequest(request);
+      },
+      onWebViewCreated: (controller) async {
+        _controller = controller;
+        await widget.bridge.attach(controller);
+
+        if (widget.onWebViewCreated != null) {
+          widget.onWebViewCreated!(controller);
+        }
+      },
+      onLoadStart: (c, url) {
+        // 检测重定向循环
+        if (_lastUrl == url?.toString()) {
+          _redirectCount++;
+          if (_redirectCount > 5) {
+            ErrorHandler.instance.logInfo(
+              '[H5WebView] Redirect loop detected, stopping load',
+            );
+            _controller?.stopLoading();
+            return;
+          }
+        } else {
+          _redirectCount = 0;
+          _lastUrl = url?.toString();
+        }
+      },
+      shouldOverrideUrlLoading: (controller, navigationAction) async {
+        final uri = navigationAction.request.url;
+        if (uri != null) {
+          final uriString = uri.toString();
+          ErrorHandler.instance.logInfo(
+            '[H5WebView] Navigation to: $uriString',
+          );
+
+          // 防止HTTP到HTTPS的循环重定向
+          if (_lastUrl != null &&
+              ((_lastUrl!.startsWith('http://') &&
+                      uriString.startsWith('https://')) ||
+                  (_lastUrl!.startsWith('https://') &&
+                      uriString.startsWith('http://')))) {
+            final httpUrl = _lastUrl!
+                .replaceFirst('https://', '')
+                .replaceFirst('http://', '');
+            final newUrl = uriString
+                .replaceFirst('https://', '')
+                .replaceFirst('http://', '');
+
+            if (httpUrl == newUrl) {
+              _redirectCount++;
+              if (_redirectCount > 3) {
+                ErrorHandler.instance.logInfo(
+                  '[H5WebView] Preventing redirect loop between HTTP/HTTPS',
+                );
+                return NavigationActionPolicy.CANCEL;
+              }
+            }
+          }
+        }
+        return NavigationActionPolicy.ALLOW;
+      },
+      onLoadStop: (c, url) async {
+        if (mounted) {
+          setState(() {
+            _isLoaded = true;
+          });
+        }
+
+        if (widget.onLoadStop != null) {
+          widget.onLoadStop!(url?.toString() ?? '');
+        }
+      },
+      onUpdateVisitedHistory: (controller, url, isReload) async {
+        // 在历史记录更新时自动更新返回按钮状态
+        await _updateBackButtonState();
+      },
+      onLoadError: (controller, url, code, message) {
+        if (widget.onLoadError != null) {
+          widget.onLoadError!(url?.toString() ?? '', code, message);
+        }
+      },
+      onConsoleMessage:
+          (controller, consoleMessage) => ErrorHandler.instance.logInfo(
+            '[MicroApp H5]: ${consoleMessage.message}',
+          ),
+    );
+
+    webView = DropTarget(
+      onDragEntered:
+          (details) => unawaited(
+            _dispatchDragStateToPage(
+              type: 'dragenter',
+              localPosition: details.localPosition,
+            ),
+          ),
+      onDragUpdated:
+          (details) => unawaited(
+            _dispatchDragStateToPage(
+              type: 'dragover',
+              localPosition: details.localPosition,
+            ),
+          ),
+      onDragExited:
+          (details) => unawaited(
+            _dispatchDragStateToPage(
+              type: 'dragleave',
+              localPosition: details.localPosition,
+            ),
+          ),
+      onDragDone: (details) => unawaited(_handleNativeFileDrop(details)),
+      child: webView,
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       appBar: widget.hideTitle ? null : _getAppBar(context),
-      body: Stack(
-        children: [
-          SafeInAppWebview(
-            key: _webViewKey,
-            initialUrlRequest: URLRequest(url: WebUri(_initialUrl!)),
-            initialSettings: InAppWebViewSettings(
-              javaScriptEnabled: true,
-              useOnLoadResource: true,
-              useShouldOverrideUrlLoading: true,
-              allowUniversalAccessFromFileURLs: true,
-              allowFileAccessFromFileURLs: true,
-              allowsInlineMediaPlayback: true,
-              useWideViewPort: true,
-              mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-              clearCache: false,
-              cacheEnabled: true,
-              domStorageEnabled: true,
-              databaseEnabled: true,
-              supportZoom: false,
-              isInspectable: true,
-              useHybridComposition: true,
-            ),
-            initialUserScripts: UnmodifiableListView<UserScript>([
-              widget.bridge.userScript,
-            ]),
-            onProgressChanged: (controller, progress) {
-              setState(() {
-                _progress = progress;
-              });
-            },
-            onDownloadStartRequest: (controller, request) async {
-              _handleDownloadRequest(request);
-            },
-            onWebViewCreated: (controller) async {
-              _controller = controller;
-              await widget.bridge.attach(controller);
-
-              if (widget.onWebViewCreated != null) {
-                widget.onWebViewCreated!(controller);
-              }
-            },
-            onLoadStart: (c, url) {
-              // 检测重定向循环
-              if (_lastUrl == url?.toString()) {
-                _redirectCount++;
-                if (_redirectCount > 5) {
-                  ErrorHandler.instance.logInfo(
-                    '[H5WebView] Redirect loop detected, stopping load',
-                  );
-                  _controller?.stopLoading();
-                  return;
-                }
-              } else {
-                _redirectCount = 0;
-                _lastUrl = url?.toString();
-              }
-            },
-            shouldOverrideUrlLoading: (controller, navigationAction) async {
-              final uri = navigationAction.request.url;
-              if (uri != null) {
-                final uriString = uri.toString();
-                ErrorHandler.instance.logInfo(
-                  '[H5WebView] Navigation to: $uriString',
-                );
-
-                // 防止HTTP到HTTPS的循环重定向
-                if (_lastUrl != null &&
-                    ((_lastUrl!.startsWith('http://') &&
-                            uriString.startsWith('https://')) ||
-                        (_lastUrl!.startsWith('https://') &&
-                            uriString.startsWith('http://')))) {
-                  final httpUrl = _lastUrl!
-                      .replaceFirst('https://', '')
-                      .replaceFirst('http://', '');
-                  final newUrl = uriString
-                      .replaceFirst('https://', '')
-                      .replaceFirst('http://', '');
-
-                  if (httpUrl == newUrl) {
-                    _redirectCount++;
-                    if (_redirectCount > 3) {
-                      ErrorHandler.instance.logInfo(
-                        '[H5WebView] Preventing redirect loop between HTTP/HTTPS',
-                      );
-                      return NavigationActionPolicy.CANCEL;
-                    }
-                  }
-                }
-              }
-              return NavigationActionPolicy.ALLOW;
-            },
-            onLoadStop: (c, url) async {
-              if (mounted) {
-                setState(() {
-                  _isLoaded = true;
-                });
-              }
-
-              if (widget.onLoadStop != null) {
-                widget.onLoadStop!(url?.toString() ?? '');
-              }
-            },
-            onUpdateVisitedHistory: (controller, url, isReload) async {
-              // 在历史记录更新时自动更新返回按钮状态
-              await _updateBackButtonState();
-            },
-            onLoadError: (controller, url, code, message) {
-              if (widget.onLoadError != null) {
-                widget.onLoadError!(url?.toString() ?? '', code, message);
-              }
-            },
-            onConsoleMessage:
-                (controller, consoleMessage) => ErrorHandler.instance.logInfo(
-                  '[MicroApp H5]: ${consoleMessage.message}',
-                ),
-          ),
-
-          IgnorePointer(
-            ignoring: showH5Page,
-            child: AnimatedOpacity(
-              opacity: showH5Page ? 0.0 : 1.0,
-              duration: Duration(milliseconds: 300),
-              child: loadingWidget,
-            ),
-          ),
-        ],
-      ),
+      body: Stack(children: [webView, if (!showH5Page) loadingWidget]),
     );
   }
 
   void _handleDownloadRequest(DownloadStartRequest request) async {
+    final l10n = EasyUiLocalizations.of(context);
     final url = request.url.toString();
     final fileName = request.suggestedFilename ?? url.split('/').last;
-    String? outputFilePath;
-    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      if (Platform.isAndroid) {
-        try {
-          await requestFileAccessPermissions();
-        } catch (e) {
-          ErrorHandler.instance.logError(
-            "[H5WebView] File permission denied: $e",
-          );
-          showToastError(text: "文件访问权限被拒绝");
+
+    if (!kIsWeb && Platform.isAndroid) {
+      try {
+        final fileBytes = await _downloadFileBytes(url, l10n);
+        final outputFilePath = await FilePicker.platform.saveFile(
+          dialogTitle: l10n.selectSaveLocation,
+          fileName: fileName,
+          bytes: fileBytes,
+        );
+
+        if (outputFilePath == null) {
+          ErrorHandler.instance.logInfo('用户取消保存');
           return;
         }
-      }
 
-      // Android/iOS 上 saveFile 需要提前传入 bytes，这里改为选择目录后自行拼接文件名
+        showToastOk(text: l10n.fileSavedTo(outputFilePath));
+      } catch (e) {
+        final message = l10n.downloadFailed(e.toString());
+        ErrorHandler.instance.logError(message);
+        showToastError(text: message);
+      }
+      return;
+    }
+
+    String? outputFilePath;
+    if (!kIsWeb && Platform.isIOS) {
+      // iOS 上 saveFile 需要提前传入 bytes，这里选择目录后自行拼接文件名。
       final directoryPath = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: "选择保存位置",
+        dialogTitle: l10n.selectSaveLocation,
       );
       if (directoryPath == null) {
         debugPrint("用户取消保存");
@@ -560,7 +724,7 @@ class H5WebViewState extends State<H5WebView> {
     } else {
       // 桌面端可以直接选择完整路径
       outputFilePath = await FilePicker.platform.saveFile(
-        dialogTitle: "选择保存位置",
+        dialogTitle: l10n.selectSaveLocation,
         fileName: fileName,
       );
       if (outputFilePath == null) {
@@ -570,12 +734,13 @@ class H5WebViewState extends State<H5WebView> {
     }
 
     try {
-      await _downloadFile(url, outputFilePath);
-      showToastOk(text: "文件已保存到: $outputFilePath");
+      await _downloadFile(url, outputFilePath, l10n);
+      showToastOk(text: l10n.fileSavedTo(outputFilePath));
     } catch (e) {
-      ErrorHandler.instance.logError("下载失败: ${e.toString()}");
+      final message = l10n.downloadFailed(e.toString());
 
-      showToastError(text: "下载失败: ${e.toString()}");
+      ErrorHandler.instance.logError("下载失败: ${e.toString()}");
+      showToastError(text: message);
     }
   }
 
@@ -657,7 +822,9 @@ class H5WebViewState extends State<H5WebView> {
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () {
-                    showToastOk(text: "敬请期待");
+                    showToastOk(
+                      text: EasyUiLocalizations.of(context).comingSoon,
+                    );
                   },
                   child: SvgPicture.asset(
                     width: 18,
@@ -698,3 +865,182 @@ class H5WebViewState extends State<H5WebView> {
   InAppWebViewController? get controller => _controller;
   bool get isLoaded => _isLoaded;
 }
+
+const String _nativeDragEventScript = r'''
+const nativeDropPayload = payload || {};
+const eventType = nativeDropPayload.type || 'drop';
+const clientX = Number(nativeDropPayload.clientX || 0);
+const clientY = Number(nativeDropPayload.clientY || 0);
+
+function decodeBase64ToBytes(base64) {
+  const binary = atob(base64 || '');
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function createFiles(filePayloads) {
+  return (filePayloads || []).map((item) => {
+    const bytes = decodeBase64ToBytes(item.base64);
+    return new File([bytes], item.name || 'dropped-file', {
+      type: item.mimeType || '',
+      lastModified: Number(item.lastModified || Date.now()),
+    });
+  });
+}
+
+function createMockDataTransfer(files) {
+  try {
+    Object.defineProperty(files, 'item', {
+      configurable: true,
+      enumerable: false,
+      value: (index) => files[index] || null,
+    });
+  } catch (_) {}
+
+  return {
+    files,
+    items: files.map((file) => ({
+      kind: 'file',
+      type: file.type,
+      getAsFile: () => file,
+      webkitGetAsEntry: () => ({
+        isFile: true,
+        isDirectory: false,
+        name: file.name,
+      }),
+    })),
+    types: files.length > 0 ? ['Files'] : [],
+    dropEffect: 'copy',
+    effectAllowed: 'all',
+  };
+}
+
+function createDataTransfer(files) {
+  try {
+    const dataTransfer = new DataTransfer();
+    files.forEach((file) => dataTransfer.items.add(file));
+    dataTransfer.dropEffect = 'copy';
+    dataTransfer.effectAllowed = 'all';
+    return dataTransfer;
+  } catch (_) {
+    return createMockDataTransfer(files);
+  }
+}
+
+function createDragEvent(type, dataTransfer, relatedTarget) {
+  let event;
+  const eventInit = {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    clientX,
+    clientY,
+    dataTransfer,
+    relatedTarget: relatedTarget || null,
+  };
+
+  try {
+    event = new DragEvent(type, eventInit);
+  } catch (_) {
+    event = new Event(type, eventInit);
+  }
+
+  const readonlyProps = {
+    clientX,
+    clientY,
+    dataTransfer,
+    relatedTarget: relatedTarget || null,
+  };
+
+  Object.entries(readonlyProps).forEach(([key, value]) => {
+    try {
+      Object.defineProperty(event, key, {
+        configurable: true,
+        enumerable: true,
+        value,
+      });
+    } catch (_) {}
+  });
+
+  return event;
+}
+
+function uniqueTargets(targets) {
+  return Array.from(
+    new Set(targets.filter((target) => target && target.isConnected !== false))
+  );
+}
+
+function getActiveDraggers() {
+  return Array.from(
+    document.querySelectorAll('.el-upload-dragger.is-dragover')
+  );
+}
+
+function getDragState() {
+  const stateKey = '__alabNativeDropState';
+  window[stateKey] = window[stateKey] || { targets: [] };
+  return window[stateKey];
+}
+
+function getTrackedTargets() {
+  const dragState = getDragState();
+  return uniqueTargets([...(dragState.targets || []), ...getActiveDraggers()]);
+}
+
+function getPointDropTarget() {
+  const pointTarget =
+    document.elementFromPoint(clientX, clientY) ||
+    document.body ||
+    document.documentElement;
+  return pointTarget?.closest?.(
+    '[data-native-drop-target], .el-upload-dragger, input[type="file"]'
+  ) || null;
+}
+
+function getDropTargets() {
+  if (eventType === 'dragleave') {
+    return getTrackedTargets();
+  }
+
+  const explicitTarget = getPointDropTarget();
+  return explicitTarget ? [explicitTarget] : [];
+}
+
+function leaveStaleTargets(currentTargets, dataTransfer) {
+  const currentTargetSet = new Set(currentTargets);
+  const nextRelatedTarget = currentTargets[0] || null;
+  getTrackedTargets().forEach((target) => {
+    if (!currentTargetSet.has(target)) {
+      target.dispatchEvent(
+        createDragEvent('dragleave', dataTransfer, nextRelatedTarget)
+      );
+    }
+  });
+}
+
+const files = createFiles(nativeDropPayload.files);
+const dataTransfer = createDataTransfer(files);
+const targets = getDropTargets().filter(Boolean);
+const sequence =
+  eventType === 'drop' ? ['dragenter', 'dragover', 'drop'] : [eventType];
+const dragState = getDragState();
+
+if (eventType !== 'dragleave') {
+  leaveStaleTargets(targets, dataTransfer);
+}
+
+targets.forEach((target) => {
+  sequence.forEach((type) => {
+    target.dispatchEvent(createDragEvent(type, dataTransfer, null));
+  });
+});
+
+dragState.targets =
+  eventType === 'drop' || eventType === 'dragleave' ? [] : targets;
+
+return targets.length > 0;
+''';

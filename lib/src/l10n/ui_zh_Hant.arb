@@ -111,5 +111,59 @@
   "actionZoomUp": "放大",
   "actionZoomDown": "縮小",
   "actionZoomFit": "自適應",
-  "actionBackToTop": "回到頂部"
+  "actionBackToTop": "回到頂部",
+  "selectSaveLocation": "選擇保存位置",
+  "fileSavedTo": "文件已保存到: {filePath}",
+  "@fileSavedTo": {
+    "placeholders": {
+      "filePath": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFailed": "下載失敗: {error}",
+  "@downloadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadRequestFailed": "下載請求失敗",
+  "downloadBlobUrlUnsupported": "檢測到 Blob URL，無法直接下載。請在 H5 中使用 as.downloadBlob 方法。",
+  "sourceFileNotFound": "源文件不存在: {path}",
+  "@sourceFileNotFound": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "g99CycleQc": "Cycle QC",
+  "g99LaneQc": "Lane QC",
+  "g99SampleQc": "Sample QC",
+  "g99SequenceSummary": "Sequence Summary",
+  "g99Index": "序號",
+  "g99SampleCode": "樣本編號",
+  "g99StartTime": "開始時間： {time}",
+  "@g99StartTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "g99EndTime": "結束時間： {time}",
+  "@g99EndTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "g99SequencingQcExampleTitle": "G99 Sequencing QC 組件示例",
+  "g99SequencingQcExampleDescription": "展示 G99 測序質控數據的 Cycle QC、Lane QC、Sample QC 和 Sequence Summary。",
+  "g99SequencingQcMockDataCoverageTitle": "Mock 數據覆蓋範圍",
+  "g99SequencingQcMockDataCoverageDescription": "當前示例包含 12 個 cycle 的曲線數據、4 條 Lane QC、3 條 Sample QC，以及 2 個 summary lane。",
+  "comingSoon": "敬請期待"
 }

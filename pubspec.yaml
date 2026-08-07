@@ -14,6 +14,7 @@ dependencies:
   intl: any
   shadcn_flutter: ^0.0.36
   flutter_svg: ^2.2.0
+  fl_chart: ^0.69.2
   popover: ^0.3.1
   equatable: ^2.0.5
   lottie: ^3.3.0
@@ -62,6 +63,7 @@ dependencies:
   permission_handler: ^12.0.0+1
   archive: ^3.6.1
   crypto: ^3.0.0
+  shared_preferences: ^2.5.3
 
   # Direct imports used by migrated source files.
   async: ^2.12.0

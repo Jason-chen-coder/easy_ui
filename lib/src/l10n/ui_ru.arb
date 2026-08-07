@@ -69,5 +69,38 @@
   "actionZoomUp": "Увеличить",
   "actionZoomDown": "Уменьшить",
   "actionZoomFit": "Подогнать по размеру",
-  "actionBackToTop": "Наверх"
+  "actionBackToTop": "Наверх",
+  "selectSaveLocation": "Выберите место сохранения",
+  "fileSavedTo": "Файл сохранен в: {filePath}",
+  "downloadFailed": "Не удалось загрузить: {error}",
+  "downloadRequestFailed": "Не удалось выполнить запрос на загрузку",
+  "downloadBlobUrlUnsupported": "Blob URL нельзя загрузить напрямую. В H5 используйте метод as.downloadBlob.",
+  "sourceFileNotFound": "Исходный файл не найден: {path}",
+  "g99CycleQc": "Контроль качества циклов",
+  "g99LaneQc": "Контроль качества Lane",
+  "g99SampleQc": "Контроль качества образцов",
+  "g99SequenceSummary": "Сводка секвенирования",
+  "g99Index": "№",
+  "g99SampleCode": "Код образца",
+  "g99StartTime": "Время начала: {time}",
+  "@g99StartTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "g99EndTime": "Время окончания: {time}",
+  "@g99EndTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "g99SequencingQcExampleTitle": "Пример G99 Sequencing QC",
+  "g99SequencingQcExampleDescription": "Отображает данные контроля качества секвенирования G99 для Cycle QC, Lane QC, Sample QC и Sequence Summary.",
+  "g99SequencingQcMockDataCoverageTitle": "Покрытие mock-данных",
+  "g99SequencingQcMockDataCoverageDescription": "Пример содержит данные кривых для 12 циклов, 4 строки Lane QC, 3 строки Sample QC и 2 summary lane.",
+  "comingSoon": "Скоро"
 }

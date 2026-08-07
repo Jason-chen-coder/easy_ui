@@ -232,4 +232,71 @@ class EasyUiLocalizationsEn extends EasyUiLocalizations {
 
   @override
   String get actionBackToTop => 'Back to Top';
+
+  @override
+  String get selectSaveLocation => 'Select Save Location';
+
+  @override
+  String fileSavedTo(String filePath) {
+    return 'File saved to: $filePath';
+  }
+
+  @override
+  String downloadFailed(String error) {
+    return 'Download failed: $error';
+  }
+
+  @override
+  String get downloadRequestFailed => 'Download request failed';
+
+  @override
+  String get downloadBlobUrlUnsupported => 'Blob URLs cannot be downloaded directly. Use the as.downloadBlob method in H5.';
+
+  @override
+  String sourceFileNotFound(String path) {
+    return 'Source file not found: $path';
+  }
+
+  @override
+  String get g99CycleQc => 'Cycle QC';
+
+  @override
+  String get g99LaneQc => 'Lane QC';
+
+  @override
+  String get g99SampleQc => 'Sample QC';
+
+  @override
+  String get g99SequenceSummary => 'Sequence Summary';
+
+  @override
+  String get g99Index => 'No.';
+
+  @override
+  String get g99SampleCode => 'Sample Code';
+
+  @override
+  String g99StartTime(String time) {
+    return 'Start Time: $time';
+  }
+
+  @override
+  String g99EndTime(String time) {
+    return 'End Time: $time';
+  }
+
+  @override
+  String get g99SequencingQcExampleTitle => 'G99 Sequencing QC Example';
+
+  @override
+  String get g99SequencingQcExampleDescription => 'Displays G99 sequencing QC data for Cycle QC, Lane QC, Sample QC, and Sequence Summary.';
+
+  @override
+  String get g99SequencingQcMockDataCoverageTitle => 'Mock Data Coverage';
+
+  @override
+  String get g99SequencingQcMockDataCoverageDescription => 'This example includes curve data for 12 cycles, 4 Lane QC rows, 3 Sample QC rows, and 2 summary lanes.';
+
+  @override
+  String get comingSoon => 'Coming soon';
 }

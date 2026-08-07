@@ -35,6 +35,7 @@ export 'src/easy_skeleton/easy_skeleton.dart';
 export 'src/easy_empty_view.dart';
 export 'src/easy_menu/easy_menu_anchor.dart';
 export 'src/easy_menu/easy_menu_style.dart';
+export 'src/easy_menu/easy_more_menu.dart';
 export 'src/easy_menu/easy_list_pop_menu.dart';
 export 'src/easy_menu/easy_single_check_pop_menu.dart';
 export 'src/easy_select/easy_select.dart';
@@ -122,6 +123,9 @@ export 'src/easy_local_notifications/easy_local_notifications.dart';
 
 // Carousel
 export 'src/easy_carousel/easy_carousel.dart';
+
+// G99 Sequencing QC
+export 'src/easy_g99_sequencing_qc.dart';
 
 // Step Indicator
 export 'src/easy_step_indicator/easy_step_indicator.dart';

@@ -124,6 +124,16 @@ final List<TreeNode> treeItems = [
     ],
   ),
   TreeNode(
+    title: '业务组件',
+    children: [
+      TreeNode(
+        title: 'G99 Sequencing QC',
+        routeName: '/g99SequencingQc',
+        builder: (context) => const G99SequencingQcDemo(),
+      ),
+    ],
+  ),
+  TreeNode(
     title: '数据输入',
     children: [
       TreeNode(
@@ -240,6 +250,11 @@ final List<TreeNode> treeItems = [
         title: '标签页',
         routeName: '/tabs',
         builder: (context) => const TabsDemo(),
+      ),
+      TreeNode(
+        title: '更多菜单',
+        routeName: '/moreMenu',
+        builder: (context) => const EasyMoreMenuDemo(),
       ),
     ],
   ),

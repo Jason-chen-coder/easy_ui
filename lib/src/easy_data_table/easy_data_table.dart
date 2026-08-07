@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:pixel_snap/material.dart' show PixelSnap, PixelSnapExtNum;
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
+import '../easy_utils/uikit_prefs.dart';
+
 typedef EasyDataTableCellBuilder =
     Widget Function(BuildContext context, TableVicinity vicinity);
 
@@ -40,6 +42,34 @@ class EasyDataTableColumnConfig {
   int get hashCode => Object.hash(visibilityOptionName, width, alwaysVisible);
 }
 
+class EasyDataTableStoragedConfig {
+  final List<int> initialInvisibleColumnIndices;
+
+  const EasyDataTableStoragedConfig({
+    this.initialInvisibleColumnIndices = const [],
+  });
+
+  factory EasyDataTableStoragedConfig.fromJson(Object? json) {
+    if (json is! Map) {
+      return const EasyDataTableStoragedConfig();
+    }
+
+    final initialInvisibleColumnIndices = json['initialInvisibleColumnIndices'];
+    return EasyDataTableStoragedConfig(
+      initialInvisibleColumnIndices:
+          initialInvisibleColumnIndices is List
+              ? initialInvisibleColumnIndices.whereType<int>().toList(
+                growable: false,
+              )
+              : const [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'initialInvisibleColumnIndices': initialInvisibleColumnIndices,
+  };
+}
+
 class EasyDataTable extends StatefulWidget {
   const EasyDataTable({
     super.key,
@@ -51,6 +81,7 @@ class EasyDataTable extends StatefulWidget {
     required this.columnConfigs,
     required this.cellBuilder,
     this.initialInvisibleColumnIndices = const [],
+    this.configStorageKey,
     this.frozenLeftColumnCount = 0,
     this.frozenLastColumn = false,
     this.searchWidget,
@@ -89,6 +120,9 @@ class EasyDataTable extends StatefulWidget {
   /// 初始不可见列
   final List<int> initialInvisibleColumnIndices;
 
+  /// 列显示配置持久化key，值为null时不保存
+  final String? configStorageKey;
+
   /// 冻结表单左边前几列
   final int frozenLeftColumnCount;
 
@@ -119,61 +153,200 @@ class _EasyDataTableState extends State<EasyDataTable> {
   /// 不可见列索引
   late Set<int> _invisibleColumnIndices;
 
+  String? get _storageKey =>
+      widget.configStorageKey == null
+          ? null
+          : 'data_table.${widget.configStorageKey!}';
+
+  int _configStorageLoadSerial = 0;
+
+  late bool _loadingConfig;
+
   @override
   void initState() {
     super.initState();
-    _invisibleColumnIndices = Set.of(widget.initialInvisibleColumnIndices);
+    _invisibleColumnIndices = _sanitizeInvisibleColumnIndices(
+      widget.initialInvisibleColumnIndices,
+    );
+    _loadingConfig = _storageKey != null;
+    _loadInvisibleColumnIndicesFromStorage();
+  }
+
+  @override
+  void didUpdateWidget(covariant EasyDataTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.configStorageKey != oldWidget.configStorageKey) {
+      _invisibleColumnIndices = _sanitizeInvisibleColumnIndices(
+        widget.initialInvisibleColumnIndices,
+      );
+      _loadingConfig = _storageKey != null;
+      _loadInvisibleColumnIndicesFromStorage();
+      return;
+    }
+
+    if (!listEquals(widget.columnConfigs, oldWidget.columnConfigs)) {
+      final sanitizedInvisibleColumnIndices = _sanitizeInvisibleColumnIndices(
+        _invisibleColumnIndices,
+      );
+      if (!setEquals(
+        sanitizedInvisibleColumnIndices,
+        _invisibleColumnIndices,
+      )) {
+        setState(() {
+          _invisibleColumnIndices = sanitizedInvisibleColumnIndices;
+        });
+        _saveInvisibleColumnIndices();
+      }
+    }
+  }
+
+  Set<int> _sanitizeInvisibleColumnIndices(Iterable<int> indices) {
+    final invisibleColumnIndices = <int>{};
+    for (final index in indices) {
+      if (index >= 0 &&
+          index < widget.columnConfigs.length &&
+          !widget.columnConfigs[index].alwaysVisible) {
+        invisibleColumnIndices.add(index);
+      }
+    }
+    return invisibleColumnIndices;
+  }
+
+  Future<void> _loadInvisibleColumnIndicesFromStorage() async {
+    final storageKey = _storageKey;
+    if (storageKey == null) {
+      if (_loadingConfig) {
+        setState(() {
+          _loadingConfig = false;
+        });
+      }
+      return;
+    }
+
+    final loadSerial = ++_configStorageLoadSerial;
+    if (!_loadingConfig) {
+      setState(() {
+        _loadingConfig = true;
+      });
+    }
+    final storagedConfig = await UikitPrefs.getJson(
+      storageKey,
+      EasyDataTableStoragedConfig.fromJson,
+    );
+    if (!mounted ||
+        storageKey != _storageKey ||
+        loadSerial != _configStorageLoadSerial) {
+      return;
+    }
+
+    setState(() {
+      if (storagedConfig != null) {
+        _invisibleColumnIndices = _sanitizeInvisibleColumnIndices(
+          storagedConfig.initialInvisibleColumnIndices,
+        );
+      }
+      _loadingConfig = false;
+    });
+  }
+
+  Future<void> _saveInvisibleColumnIndices() async {
+    final storageKey = _storageKey;
+    if (storageKey == null) {
+      return;
+    }
+
+    ++_configStorageLoadSerial;
+    await UikitPrefs.setJson(
+      storageKey,
+      EasyDataTableStoragedConfig(
+        initialInvisibleColumnIndices: _invisibleColumnIndices.toList(
+          growable: false,
+        )..sort(),
+      ).toJson(),
+    );
   }
 
   /// 选择所有筛选选项
   void _selectAllFilterOptions(bool? select, Iterable<int> items) {
+    if (_loadingConfig) {
+      return;
+    }
+
     setState(() {
       if (select != null) {
-        _invisibleColumnIndices = {};
+        _invisibleColumnIndices = _sanitizeInvisibleColumnIndices([]);
       } else {
-        _invisibleColumnIndices = {..._invisibleColumnIndices, ...items};
+        _invisibleColumnIndices = _sanitizeInvisibleColumnIndices([
+          ..._invisibleColumnIndices,
+          ...items,
+        ]);
       }
     });
+    _saveInvisibleColumnIndices();
   }
 
   /// 选择一个筛选选项
   void _selectFilterOption(bool? select, int index) {
+    if (_loadingConfig) {
+      return;
+    }
+
     if (select != null) {
       setState(() {
         if (select) {
-          _invisibleColumnIndices = Set.of(_invisibleColumnIndices)
-            ..remove(index);
+          _invisibleColumnIndices = _sanitizeInvisibleColumnIndices(
+            _invisibleColumnIndices,
+          )..remove(index);
         } else {
-          _invisibleColumnIndices = Set.of(_invisibleColumnIndices)..add(index);
+          _invisibleColumnIndices = _sanitizeInvisibleColumnIndices([
+            ..._invisibleColumnIndices,
+            index,
+          ]);
         }
       });
+      _saveInvisibleColumnIndices();
     }
+  }
+
+  Widget _buildConfigLoadingPlaceholder(BuildContext context) {
+    final alabTheme = EasyTheme.of(context);
+
+    return Center(
+      child: CircularProgressIndicator(
+        color: alabTheme.primaryGreen,
+        strokeWidth: 3,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final table = LayoutBuilder(
-      builder: (context, constraints) {
-        return _EasyDataTableView(
-          loadingData: widget.loadingData,
-          headerHeight: widget.headerHeight,
-          headerBuilder: widget.headerBuilder,
-          rowCount: widget.rowCount,
-          rowHeight: widget.rowHeight,
-          columnConfigs: widget.columnConfigs,
-          cellBuilder: widget.cellBuilder,
-          frozenLeftColumnCount: widget.frozenLeftColumnCount,
-          frozenLastColumn: widget.frozenLastColumn,
-          searchWidget: widget.searchWidget,
-          operationsWidget: widget.operationsWidget,
-          emptyWidget: widget.emptyWidget,
-          calculateDelegate: widget.calculateDelegate,
-          showHoverEffect: widget.showHoverEffect,
-          size: constraints.biggest,
-          invisibleColumnIndices: _invisibleColumnIndices,
-        );
-      },
-    );
+    final loadingData = widget.loadingData || _loadingConfig;
+    final table =
+        _loadingConfig
+            ? _buildConfigLoadingPlaceholder(context)
+            : LayoutBuilder(
+              builder: (context, constraints) {
+                return _EasyDataTableView(
+                  loadingData: loadingData,
+                  headerHeight: widget.headerHeight,
+                  headerBuilder: widget.headerBuilder,
+                  rowCount: widget.rowCount,
+                  rowHeight: widget.rowHeight,
+                  columnConfigs: widget.columnConfigs,
+                  cellBuilder: widget.cellBuilder,
+                  frozenLeftColumnCount: widget.frozenLeftColumnCount,
+                  frozenLastColumn: widget.frozenLastColumn,
+                  searchWidget: widget.searchWidget,
+                  operationsWidget: widget.operationsWidget,
+                  emptyWidget: widget.emptyWidget,
+                  calculateDelegate: widget.calculateDelegate,
+                  showHoverEffect: widget.showHoverEffect,
+                  size: constraints.biggest,
+                  invisibleColumnIndices: _invisibleColumnIndices,
+                );
+              },
+            );
 
     if (widget.searchWidget != null || widget.operationsWidget != null) {
       return Column(
@@ -191,7 +364,7 @@ class _EasyDataTableState extends State<EasyDataTable> {
                 children: [
                   Expanded(child: widget.operationsWidget!),
                   _EasyDataTableFilter(
-                    loadingData: widget.loadingData,
+                    loadingData: loadingData,
                     columnConfigs: widget.columnConfigs,
                     invisibleColumnIndices: _invisibleColumnIndices,
                     selectAllFilterOptions: _selectAllFilterOptions,
@@ -526,10 +699,10 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
   }
 
   /// 获取行背景色
-  Color _getRowBackgroundColor(int rowIndex, EasyThemeData easyTheme) {
+  Color _getRowBackgroundColor(int rowIndex, EasyThemeData alabTheme) {
     return rowIndex == _hoverRowIndex
-        ? easyTheme.primaryGreen.withAlpha(0x1F)
-        : easyTheme.background;
+        ? alabTheme.primaryGreen.withAlpha(0x1F)
+        : alabTheme.background;
   }
 
   void _onMouseEnterRowEvent(PointerEnterEvent event, int rowIndex) {
@@ -550,9 +723,9 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
 
   @override
   Widget build(BuildContext context) {
-    final easyTheme = EasyTheme.of(context);
-    final headerBackground = easyTheme.neutralF8;
-    final borderColor = easyTheme.neutral33.withAlpha(0x0F);
+    final alabTheme = EasyTheme.of(context);
+    final headerBackground = alabTheme.neutralF8;
+    final borderColor = alabTheme.neutral33.withAlpha(0x0F);
     final rowCount = widget.rowCount;
 
     final tableView =
@@ -585,7 +758,7 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
                 } else {
                   return TableSpan(
                     backgroundDecoration: SpanDecoration(
-                      color: _getRowBackgroundColor(row - 1, easyTheme),
+                      color: _getRowBackgroundColor(row - 1, alabTheme),
                       border: SpanBorder(
                         trailing: BorderSide(
                           color: borderColor,
@@ -656,7 +829,7 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
                                 : null,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: _getRowBackgroundColor(index, easyTheme),
+                            color: _getRowBackgroundColor(index, alabTheme),
                             border: Border(
                               bottom: BorderSide(
                                 color: borderColor,
@@ -696,7 +869,7 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(easyTheme.cornerMedium),
+        borderRadius: BorderRadius.all(alabTheme.cornerMedium),
         border: Border.all(
           color: borderColor,
           strokeAlign: BorderSide.strokeAlignOutside,
@@ -713,10 +886,10 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
                   widget.loadingData
                       ? Container(
                         key: UniqueKey(),
-                        color: easyTheme.background.withValues(alpha: .8),
+                        color: alabTheme.background.withValues(alpha: .8),
                         child: Center(
                           child: CircularProgressIndicator(
-                            color: easyTheme.primaryGreen,
+                            color: alabTheme.primaryGreen,
                             strokeWidth: 3,
                           ),
                         ),
@@ -732,6 +905,7 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
 
 class _EasyDataTableFilter extends StatelessWidget {
   const _EasyDataTableFilter({
+    super.key,
     required this.loadingData,
     required this.columnConfigs,
     required this.invisibleColumnIndices,
@@ -753,20 +927,20 @@ class _EasyDataTableFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final easyTheme = EasyTheme.of(context);
+    final alabTheme = EasyTheme.of(context);
 
     return EasyMenuAnchor(
       style: EasyMenuStyle(
-        backgroundColor: easyTheme.background,
+        backgroundColor: alabTheme.background,
         borderRadius: BorderRadius.circular(4),
         boxShadows: [
           BoxShadow(
-            color: easyTheme.secondaryBlue.withAlpha(0x40),
+            color: alabTheme.secondaryBlue.withAlpha(0x40),
             blurRadius: 6,
             offset: Offset(0, 2),
           ),
         ],
-        boxBorder: Border.all(color: easyTheme.neutralEE),
+        boxBorder: Border.all(color: alabTheme.neutralEE),
       ),
       childBuilder: (context, controller, child) {
         return SizedBox(
@@ -776,9 +950,9 @@ class _EasyDataTableFilter extends StatelessWidget {
             message: EasyUiLocalizations.of(context).filterFields,
             child: TextButton(
               style: TextButton.styleFrom(
-                backgroundColor: easyTheme.neutralF8,
+                backgroundColor: alabTheme.neutralF8,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(easyTheme.cornerSmall),
+                  borderRadius: BorderRadius.all(alabTheme.cornerSmall),
                 ),
                 padding: EdgeInsets.all(8),
               ),
@@ -796,8 +970,8 @@ class _EasyDataTableFilter extends StatelessWidget {
                 Icons.checklist,
                 color:
                     controller.isOpen
-                        ? easyTheme.primaryGreen
-                        : easyTheme.termination,
+                        ? alabTheme.primaryGreen
+                        : alabTheme.termination,
                 size: 20,
               ),
             ),
@@ -830,25 +1004,23 @@ class _EasyDataTableFilter extends StatelessWidget {
             side:
                 allSelected == true
                     ? null
-                    : BorderSide(color: easyTheme.neutralEE),
+                    : BorderSide(color: alabTheme.neutralEE),
             fillColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.disabled)) {
                 return const Color(0xFFD9D9D9);
               }
               if (states.contains(WidgetState.selected)) {
                 return allSelected == null
-                    ? easyTheme.primaryGreen.withAlpha(0x33)
-                    : easyTheme.primaryGreen;
+                    ? alabTheme.primaryGreen.withAlpha(0x33)
+                    : alabTheme.primaryGreen;
               }
-              return easyTheme.background;
+              return alabTheme.background;
             }),
             checkColor:
-                allSelected == null
-                    ? easyTheme.primaryGreen
-                    : easyTheme.background,
+                allSelected == null ? alabTheme.primaryGreen : alabTheme.background,
             title: Text(
               EasyUiLocalizations.of(context).all,
-              style: TextStyle(fontSize: 14, color: easyTheme.neutral66),
+              style: TextStyle(fontSize: 14, color: alabTheme.neutral66),
             ),
             onChanged:
                 (select) => selectAllFilterOptions(
@@ -868,21 +1040,21 @@ class _EasyDataTableFilter extends StatelessWidget {
           final child = CheckboxListTile(
             title: Text(
               config.visibilityOptionName ?? '',
-              style: TextStyle(fontSize: 14, color: easyTheme.neutral66),
+              style: TextStyle(fontSize: 14, color: alabTheme.neutral66),
             ),
             controlAffinity: ListTileControlAffinity.leading,
-            side: selected ? null : BorderSide(color: easyTheme.neutralEE),
+            side: selected ? null : BorderSide(color: alabTheme.neutralEE),
             value: selected,
             fillColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.disabled)) {
                 return const Color(0xFFD9D9D9);
               }
               if (states.contains(WidgetState.selected)) {
-                return easyTheme.primaryGreen;
+                return alabTheme.primaryGreen;
               }
-              return easyTheme.background;
+              return alabTheme.background;
             }),
-            checkColor: easyTheme.background,
+            checkColor: alabTheme.background,
             onChanged:
                 config.alwaysVisible
                     ? null

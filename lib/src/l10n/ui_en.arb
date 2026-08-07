@@ -69,5 +69,38 @@
   "actionZoomUp": "Zoom In",
   "actionZoomDown": "Zoom Out",
   "actionZoomFit": "Fit to View",
-  "actionBackToTop": "Back to Top"
+  "actionBackToTop": "Back to Top",
+  "selectSaveLocation": "Select Save Location",
+  "fileSavedTo": "File saved to: {filePath}",
+  "downloadFailed": "Download failed: {error}",
+  "downloadRequestFailed": "Download request failed",
+  "downloadBlobUrlUnsupported": "Blob URLs cannot be downloaded directly. Use the as.downloadBlob method in H5.",
+  "sourceFileNotFound": "Source file not found: {path}",
+  "g99CycleQc": "Cycle QC",
+  "g99LaneQc": "Lane QC",
+  "g99SampleQc": "Sample QC",
+  "g99SequenceSummary": "Sequence Summary",
+  "g99Index": "No.",
+  "g99SampleCode": "Sample Code",
+  "g99StartTime": "Start Time: {time}",
+  "@g99StartTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "g99EndTime": "End Time: {time}",
+  "@g99EndTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "g99SequencingQcExampleTitle": "G99 Sequencing QC Example",
+  "g99SequencingQcExampleDescription": "Displays G99 sequencing QC data for Cycle QC, Lane QC, Sample QC, and Sequence Summary.",
+  "g99SequencingQcMockDataCoverageTitle": "Mock Data Coverage",
+  "g99SequencingQcMockDataCoverageDescription": "This example includes curve data for 12 cycles, 4 Lane QC rows, 3 Sample QC rows, and 2 summary lanes.",
+  "comingSoon": "Coming soon"
 }

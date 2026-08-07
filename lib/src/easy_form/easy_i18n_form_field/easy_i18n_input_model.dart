@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:easy_ui/src/easy_utils/easy_tool_kit.dart';
+import '../../easy_utils/easy_tool_kit.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../l10n/gen/easy_ui_localizations.dart';
@@ -26,7 +26,9 @@ class EasyI18nInputModel with ChangeNotifier {
   /// 组件中用到的属性（确保输入框状态和drawer状态一致）
   /// 是否只读
   bool _readOnly = false;
+
   bool get readOnly => _readOnly;
+
   set readOnly(bool value) {
     _readOnly = value;
     notifyListeners();
@@ -39,13 +41,16 @@ class EasyI18nInputModel with ChangeNotifier {
   final String labelText;
 
   String _languageCode = '';
+
   String get languageCode => _languageCode;
+
   set languageCode(String value) {
     _languageCode = value;
     notifyListeners();
   }
 
   Map<String, String> _i18nValues = {};
+
   Map<String, String> get i18nValues => _i18nValues;
 
   String get i18nJson {
@@ -73,7 +78,7 @@ class EasyI18nInputModel with ChangeNotifier {
       map = json.isNotEmpty ? Map<String, dynamic>.from(jsonDecode(json)) : {};
       _i18nValues = map.map((key, value) => MapEntry(key, value.toString()));
     } catch (e) {
-      _i18nValues = {locale.languageCode: json};
+      _i18nValues = {locale.toLanguageTag(): json};
     }
     textEditingController.text = textFieldConfig.value;
     notifyListeners();
@@ -82,15 +87,22 @@ class EasyI18nInputModel with ChangeNotifier {
   final textEditingController = TextEditingController();
 
   /// 当前正在编辑的语言code和对应的值
-  ({String code, String value}) get textFieldConfig =>
-      _i18nValues[locale.languageCode] != null
-          ? (
-            code: locale.languageCode,
-            value: _i18nValues[locale.languageCode]!,
-          )
-          : _i18nValues.isEmpty
-          ? (code: locale.languageCode, value: '')
-          : (code: _i18nValues.keys.first, value: _i18nValues.values.first);
+  ({String code, String value}) get textFieldConfig {
+    if (_i18nValues.isEmpty) {
+      return (code: locale.toLanguageTag(), value: '');
+    } else if (_i18nValues[locale.toLanguageTag()]?.isNotEmpty == true) {
+      return (
+        code: locale.toLanguageTag(),
+        value: _i18nValues[locale.toLanguageTag()]!,
+      );
+    } else {
+      final entry = _i18nValues.entries.firstWhere(
+        (e) => e.value.isNotEmpty,
+        orElse: () => MapEntry(locale.toLanguageTag(), ''),
+      );
+      return (code: entry.key, value: entry.value);
+    }
+  }
 
   String? validateTextFieldValue() {
     final value = textFieldConfig.value;

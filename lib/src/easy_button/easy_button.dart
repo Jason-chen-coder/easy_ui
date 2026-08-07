@@ -141,6 +141,7 @@ class EasyButton2 extends BaseButton {
     EasyButtonSize? size,
     bool? showHover,
     bool? showSplash,
+    String? tooltip,
   }) {
     assert(
       type != EasyButtonType.iconDefault && type != EasyButtonType.iconPrimary,
@@ -164,6 +165,7 @@ class EasyButton2 extends BaseButton {
         size: size,
         showHover: showHover ?? true,
         showSplash: showSplash ?? true,
+        tooltip: tooltip,
         child: child,
       );
     }
@@ -183,6 +185,7 @@ class EasyButton2 extends BaseButton {
       size: size,
       showHover: showHover ?? true,
       showSplash: showSplash ?? true,
+      tooltip: tooltip,
       child: _EasyButtonWithIconChild(
         icon: icon,
         label: child,
@@ -230,7 +233,7 @@ class _DefalutButtonDefaultStyle extends EasyButtonStyle {
   final BuildContext context;
   final EasyButtonSize size;
   late final ThemeData _theme = Theme.of(context);
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<TextStyle?> get textStyle =>
@@ -238,15 +241,15 @@ class _DefalutButtonDefaultStyle extends EasyButtonStyle {
 
   @override
   WidgetStateProperty<Color?>? get backgroundColor => WidgetStatePropertyAll<Color>(switch (size) {
-    EasyButtonSize.small => easyTheme.neutralEE,
-    EasyButtonSize.big => easyTheme.background,
+    EasyButtonSize.small => alabTheme.neutralEE,
+    EasyButtonSize.big => alabTheme.background,
   });
 
   @override
   WidgetStateProperty<Color?>? get foregroundColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     final color = switch (size) {
-      EasyButtonSize.small => easyTheme.neutral66,
-      EasyButtonSize.big => easyTheme.neutral99,
+      EasyButtonSize.small => alabTheme.neutral66,
+      EasyButtonSize.big => alabTheme.neutral99,
     };
     if (states.contains(WidgetState.disabled)) {
       return color.withValues(alpha: 0.5);
@@ -257,8 +260,8 @@ class _DefalutButtonDefaultStyle extends EasyButtonStyle {
   @override
   WidgetStateProperty<Color?>? get overlayColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     final color = switch (size) {
-      EasyButtonSize.small => easyTheme.neutral66,
-      EasyButtonSize.big => easyTheme.neutral99,
+      EasyButtonSize.small => alabTheme.neutral66,
+      EasyButtonSize.big => alabTheme.neutral99,
     };
     if (states.contains(WidgetState.pressed)) {
       return color.withValues(alpha: 0.1);
@@ -303,14 +306,14 @@ class _DefalutButtonDefaultStyle extends EasyButtonStyle {
   WidgetStateProperty<BorderSide>? get side => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     final border = switch (size) {
       EasyButtonSize.small => BorderSide(style: BorderStyle.none),
-      EasyButtonSize.big => BorderSide(color: easyTheme.neutralEE),
+      EasyButtonSize.big => BorderSide(color: alabTheme.neutralEE),
     };
     return border;
   });
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
 
   @override
@@ -333,7 +336,7 @@ class _PrimaryButtonDefaultStyle extends EasyButtonStyle {
   late final ThemeData _theme = Theme.of(context);
   late final ColorScheme _colors = _theme.colorScheme;
   final EasyButtonSize size;
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<TextStyle?> get textStyle =>
@@ -344,7 +347,7 @@ class _PrimaryButtonDefaultStyle extends EasyButtonStyle {
     if (states.contains(WidgetState.disabled)) {
       return _colors.onSurface.withValues(alpha: 0.12);
     }
-    return easyTheme.primaryGreen;
+    return alabTheme.primaryGreen;
   });
 
   @override
@@ -396,7 +399,7 @@ class _PrimaryButtonDefaultStyle extends EasyButtonStyle {
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
 
   @override
@@ -419,7 +422,7 @@ class _SecondaryButtonDefaultStyle extends EasyButtonStyle {
   final EasyButtonSize size;
   late final ThemeData _theme = Theme.of(context);
   late final ColorScheme _colors = _theme.colorScheme;
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<TextStyle?> get textStyle =>
@@ -430,7 +433,7 @@ class _SecondaryButtonDefaultStyle extends EasyButtonStyle {
     if (states.contains(WidgetState.disabled)) {
       return _colors.onSurface.withValues(alpha: 0.12);
     }
-    return easyTheme.secondaryBlue;
+    return alabTheme.secondaryBlue;
   });
 
   @override
@@ -482,7 +485,7 @@ class _SecondaryButtonDefaultStyle extends EasyButtonStyle {
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
 
   @override
@@ -505,33 +508,33 @@ class _OutlineButtonDefaultStyle extends EasyButtonStyle {
   final EasyButtonSize size;
   late final ThemeData _theme = Theme.of(context);
   late final ColorScheme _colors = _theme.colorScheme;
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<TextStyle?> get textStyle =>
       WidgetStatePropertyAll<TextStyle?>(TextStyle(fontSize: 14, fontWeight: FontWeight.w500, fontFamily: _theme.textTheme.bodySmall?.fontFamily));
 
   @override
-  WidgetStateProperty<Color?>? get backgroundColor => WidgetStatePropertyAll<Color>(easyTheme.background);
+  WidgetStateProperty<Color?>? get backgroundColor => WidgetStatePropertyAll<Color>(alabTheme.background);
 
   @override
   WidgetStateProperty<Color?>? get foregroundColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     if (states.contains(WidgetState.disabled)) {
       return _colors.onSurface.withValues(alpha: 0.38);
     }
-    return easyTheme.primaryGreen;
+    return alabTheme.primaryGreen;
   });
 
   @override
   WidgetStateProperty<Color?>? get overlayColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     if (states.contains(WidgetState.pressed)) {
-      return easyTheme.primaryGreen.withValues(alpha: 0.1);
+      return alabTheme.primaryGreen.withValues(alpha: 0.1);
     }
     if (states.contains(WidgetState.hovered)) {
-      return easyTheme.primaryGreen.withValues(alpha: 0.08);
+      return alabTheme.primaryGreen.withValues(alpha: 0.08);
     }
     if (states.contains(WidgetState.focused)) {
-      return easyTheme.primaryGreen.withValues(alpha: 0.1);
+      return alabTheme.primaryGreen.withValues(alpha: 0.1);
     }
     return null;
   });
@@ -567,12 +570,12 @@ class _OutlineButtonDefaultStyle extends EasyButtonStyle {
     if (states.contains(WidgetState.disabled)) {
       return BorderSide(color: _colors.onSurface.withValues(alpha: 0.2));
     }
-    return BorderSide(color: easyTheme.primaryGreen);
+    return BorderSide(color: alabTheme.primaryGreen);
   });
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
   @override
   WidgetStateProperty<MouseCursor?>? get mouseCursor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
@@ -593,7 +596,7 @@ class _InfoButtonDefaultStyle extends EasyButtonStyle {
   final BuildContext context;
   final EasyButtonSize size;
   late final ThemeData _theme = Theme.of(context);
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<TextStyle?> get textStyle =>
@@ -602,29 +605,29 @@ class _InfoButtonDefaultStyle extends EasyButtonStyle {
   @override
   WidgetStateProperty<Color?>? get backgroundColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     if (states.contains(WidgetState.disabled)) {
-      return easyTheme.neutralEE.withValues(alpha: 0.8);
+      return alabTheme.neutralEE.withValues(alpha: 0.8);
     }
-    return easyTheme.neutralBB;
+    return alabTheme.neutralBB;
   });
 
   @override
   WidgetStateProperty<Color?>? get foregroundColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     if (states.contains(WidgetState.disabled)) {
-      return easyTheme.neutralBB.withValues(alpha: 0.4);
+      return alabTheme.neutralBB.withValues(alpha: 0.4);
     }
-    return easyTheme.neutralEE;
+    return alabTheme.neutralEE;
   });
 
   @override
   WidgetStateProperty<Color?>? get overlayColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     if (states.contains(WidgetState.pressed)) {
-      return easyTheme.neutralEE.withValues(alpha: 0.1);
+      return alabTheme.neutralEE.withValues(alpha: 0.1);
     }
     if (states.contains(WidgetState.hovered)) {
-      return easyTheme.neutralEE.withValues(alpha: 0.08);
+      return alabTheme.neutralEE.withValues(alpha: 0.08);
     }
     if (states.contains(WidgetState.focused)) {
-      return easyTheme.neutralEE.withValues(alpha: 0.1);
+      return alabTheme.neutralEE.withValues(alpha: 0.1);
     }
     return null;
   });
@@ -657,7 +660,7 @@ class _InfoButtonDefaultStyle extends EasyButtonStyle {
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
 
   @override
@@ -680,7 +683,7 @@ class _TextButtonDefaultStyle extends EasyButtonStyle {
   final EasyButtonSize size;
   late final ThemeData _theme = Theme.of(context);
   late final ColorScheme _colors = _theme.colorScheme;
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<TextStyle?> get textStyle =>
@@ -694,19 +697,19 @@ class _TextButtonDefaultStyle extends EasyButtonStyle {
     if (states.contains(WidgetState.disabled)) {
       return _colors.onSurface.withValues(alpha: 0.38);
     }
-    return easyTheme.primaryGreen;
+    return alabTheme.primaryGreen;
   });
 
   @override
   WidgetStateProperty<Color?>? get overlayColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     if (states.contains(WidgetState.pressed)) {
-      return easyTheme.primaryGreen.withValues(alpha: 0.1);
+      return alabTheme.primaryGreen.withValues(alpha: 0.1);
     }
     if (states.contains(WidgetState.hovered)) {
-      return easyTheme.primaryGreen.withValues(alpha: 0.08);
+      return alabTheme.primaryGreen.withValues(alpha: 0.08);
     }
     if (states.contains(WidgetState.focused)) {
-      return easyTheme.primaryGreen.withValues(alpha: 0.1);
+      return alabTheme.primaryGreen.withValues(alpha: 0.1);
     }
     return null;
   });
@@ -741,7 +744,7 @@ class _TextButtonDefaultStyle extends EasyButtonStyle {
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
   @override
   WidgetStateProperty<MouseCursor?>? get mouseCursor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
@@ -762,13 +765,13 @@ class _DefalutIconButtonDefaultStyle extends EasyButtonStyle {
   final BuildContext context;
   final EasyButtonSize size;
   late final ColorScheme _colors = Theme.of(context).colorScheme;
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<Color?>? get backgroundColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     final color = switch (size) {
-      EasyButtonSize.small => easyTheme.neutralEE,
-      EasyButtonSize.big => easyTheme.neutralF8,
+      EasyButtonSize.small => alabTheme.neutralEE,
+      EasyButtonSize.big => alabTheme.neutralF8,
     };
     if (states.contains(WidgetState.disabled)) {
       return color.withValues(alpha: 0.80);
@@ -784,19 +787,19 @@ class _DefalutIconButtonDefaultStyle extends EasyButtonStyle {
     if (states.contains(WidgetState.selected)) {
       return _colors.primary;
     }
-    return easyTheme.neutral99;
+    return alabTheme.neutral99;
   });
 
   @override
   WidgetStateProperty<Color?>? get overlayColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     if (states.contains(WidgetState.pressed)) {
-      return easyTheme.neutral99.withValues(alpha: 0.1);
+      return alabTheme.neutral99.withValues(alpha: 0.1);
     }
     if (states.contains(WidgetState.hovered)) {
-      return easyTheme.neutral99.withValues(alpha: 0.08);
+      return alabTheme.neutral99.withValues(alpha: 0.08);
     }
     if (states.contains(WidgetState.focused)) {
-      return easyTheme.neutral99.withValues(alpha: 0.1);
+      return alabTheme.neutral99.withValues(alpha: 0.1);
     }
     return null;
   });
@@ -834,7 +837,7 @@ class _DefalutIconButtonDefaultStyle extends EasyButtonStyle {
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
   @override
   WidgetStateProperty<MouseCursor?>? get mouseCursor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
@@ -855,13 +858,13 @@ class _PrimaryIconButtonDefaultStyle extends EasyButtonStyle {
   final BuildContext context;
   final EasyButtonSize size;
   late final ColorScheme _colors = Theme.of(context).colorScheme;
-  late final EasyThemeData easyTheme = EasyTheme.of(context);
+  late final EasyThemeData alabTheme = EasyTheme.of(context);
 
   @override
   WidgetStateProperty<Color?>? get backgroundColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     final color = switch (size) {
-      EasyButtonSize.small => easyTheme.primaryGreen,
-      EasyButtonSize.big => easyTheme.primaryGreen.withValues(alpha: 0.2),
+      EasyButtonSize.small => alabTheme.primaryGreen,
+      EasyButtonSize.big => alabTheme.primaryGreen.withValues(alpha: 0.2),
     };
     if (states.contains(WidgetState.disabled)) {
       return _colors.onSurface.withValues(alpha: 0.12);
@@ -873,7 +876,7 @@ class _PrimaryIconButtonDefaultStyle extends EasyButtonStyle {
   WidgetStateProperty<Color?>? get foregroundColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     final color = switch (size) {
       EasyButtonSize.small => Colors.white,
-      EasyButtonSize.big => easyTheme.primaryGreen,
+      EasyButtonSize.big => alabTheme.primaryGreen,
     };
     if (states.contains(WidgetState.disabled)) {
       return _colors.onSurface.withValues(alpha: 0.38);
@@ -888,7 +891,7 @@ class _PrimaryIconButtonDefaultStyle extends EasyButtonStyle {
   WidgetStateProperty<Color?>? get overlayColor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {
     final color = switch (size) {
       EasyButtonSize.small => Colors.white,
-      EasyButtonSize.big => easyTheme.primaryGreen,
+      EasyButtonSize.big => alabTheme.primaryGreen,
     };
     if (states.contains(WidgetState.pressed)) {
       return color.withValues(alpha: 0.1);
@@ -935,7 +938,7 @@ class _PrimaryIconButtonDefaultStyle extends EasyButtonStyle {
 
   @override
   WidgetStateProperty<OutlinedBorder>? get shape => WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(borderRadius: BorderRadius.all(easyTheme.cornerSmall)),
+    RoundedRectangleBorder(borderRadius: BorderRadius.all(alabTheme.cornerSmall)),
   );
   @override
   WidgetStateProperty<MouseCursor?>? get mouseCursor => WidgetStateProperty.resolveWith((Set<WidgetState> states) {

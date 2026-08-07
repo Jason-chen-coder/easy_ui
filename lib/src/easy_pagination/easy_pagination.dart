@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:easy_ui/easy_ui.dart';
+import 'package:easy_ui/src/easy_menu/easy_menu_anchor.dart';
+import 'package:easy_ui/src/easy_theme.dart';
 import 'package:flutter/material.dart';
 
 class EasyPagination extends StatelessWidget {
@@ -11,6 +13,7 @@ class EasyPagination extends StatelessWidget {
     required this.currentPage,
     required this.onPageChanged,
     this.loadingData = false,
+    this.totalBuilder,
     this.totalTextStyle = const TextStyle(
       color: Color(0xFF666666),
       fontSize: 12,
@@ -35,6 +38,9 @@ class EasyPagination extends StatelessWidget {
   /// 总数文本样式
   final TextStyle totalTextStyle;
 
+  /// 总数组件builder
+  final Widget Function(BuildContext context, int total)? totalBuilder;
+
   /// 是否正在加载数据
   final bool loadingData;
 
@@ -52,7 +58,7 @@ class EasyPagination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final easyTheme = EasyTheme.of(context);
+    final alabTheme = EasyTheme.of(context);
     final localizations = EasyUiLocalizations.of(context);
     final int totalPages = (total / pageSize).ceil();
     final List<Widget> pageButtons = [];
@@ -129,16 +135,19 @@ class EasyPagination extends StatelessWidget {
       }
     }
 
-    return SizedBox(
+    return Container(
       height: 40,
       child: Stack(
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              localizations.totalRecords(total),
-              style: totalTextStyle,
-            ),
+            child:
+                totalBuilder != null
+                    ? totalBuilder!(context, total)
+                    : Text(
+                      localizations.totalRecords(total),
+                      style: totalTextStyle,
+                    ),
           ),
           // 分页组件
           Material(
@@ -158,7 +167,7 @@ class EasyPagination extends StatelessWidget {
                             }
                             : null,
                     borderRadius: BorderRadius.circular(18),
-                    child: SizedBox(
+                    child: Container(
                       width: 36,
                       height: 36,
                       child: Icon(
@@ -181,7 +190,7 @@ class EasyPagination extends StatelessWidget {
                               onPageChanged(currentPage + 1);
                             }
                             : null,
-                    child: SizedBox(
+                    child: Container(
                       width: 36,
                       height: 36,
                       child: Icon(
@@ -204,7 +213,7 @@ class EasyPagination extends StatelessWidget {
               child: EasyMenuAnchor(
                 style: EasyMenuStyle(
                   boxShadows: [],
-                  boxBorder: Border.all(color: easyTheme.neutralEE),
+                  boxBorder: Border.all(color: alabTheme.neutralEE),
                 ),
                 childBuilder: (context, menuController, _) {
                   return InkWell(
@@ -222,8 +231,8 @@ class EasyPagination extends StatelessWidget {
                       height: 46,
                       padding: EdgeInsets.symmetric(horizontal: 18),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(easyTheme.cornerSmall),
-                        border: Border.all(color: easyTheme.neutralEE),
+                        borderRadius: BorderRadius.all(alabTheme.cornerSmall),
+                        border: Border.all(color: alabTheme.neutralEE),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -233,7 +242,7 @@ class EasyPagination extends StatelessWidget {
                               localizations.itemsPerPage(pageSize),
                               style: TextStyle(
                                 fontSize: defaultFontSize,
-                                color: easyTheme.neutral66,
+                                color: alabTheme.neutral66,
                               ),
                             ),
                           ),
@@ -241,12 +250,12 @@ class EasyPagination extends StatelessWidget {
                           menuController.isOpen
                               ? Icon(
                                 Icons.keyboard_arrow_up,
-                                color: easyTheme.neutral66,
+                                color: alabTheme.neutral66,
                                 size: 16,
                               )
                               : Icon(
                                 Icons.keyboard_arrow_down,
-                                color: easyTheme.neutral66,
+                                color: alabTheme.neutral66,
                                 size: 16,
                               ),
                         ],
@@ -271,12 +280,12 @@ class EasyPagination extends StatelessWidget {
                                     menuController.close();
                                     onPageSizeChanged?.call(e);
                                   },
-                          tileColor: pageSize == e ? easyTheme.neutralEE : null,
+                          tileColor: pageSize == e ? alabTheme.neutralEE : null,
                           title: Text(
                             localizations.itemsPerPage(e),
                             style: TextStyle(
                               fontSize: defaultFontSize,
-                              color: easyTheme.neutral66,
+                              color: alabTheme.neutral66,
                             ),
                           ),
                         );

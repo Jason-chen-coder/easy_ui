@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="172px" height="116px" viewBox="0 0 172 116" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>G99 Sequencing QC</title>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect stroke="#F0F0F0" fill="#FFFFFF" x="0.5" y="0.5" width="171" height="115" rx="4"></rect>
+        <rect fill="#EBEBEB" x="14" y="13" width="32" height="8" rx="2"></rect>
+        <rect fill="#31DA9F" x="52" y="13" width="32" height="8" rx="2"></rect>
+        <rect fill="#EBEBEB" x="90" y="13" width="32" height="8" rx="2"></rect>
+        <rect fill="#EBEBEB" x="128" y="13" width="30" height="8" rx="2"></rect>
+        <rect fill="#F8F8F8" x="12" y="31" width="148" height="73" rx="4"></rect>
+        <rect fill="#FFFFFF" x="21" y="41" width="47" height="53" rx="3"></rect>
+        <rect fill="#F5F5F5" x="29" y="50" width="28" height="5" rx="1.5"></rect>
+        <rect fill="#EBEBEB" x="29" y="63" width="31" height="4" rx="1.5"></rect>
+        <rect fill="#EBEBEB" x="29" y="74" width="25" height="4" rx="1.5"></rect>
+        <rect fill="#31DA9F" x="29" y="85" width="31" height="4" rx="1.5"></rect>
+        <rect fill="#FFFFFF" x="78" y="41" width="73" height="53" rx="3"></rect>
+        <polyline stroke="#31DA9F" stroke-width="2" points="87 80 101 70 115 73 129 58 143 62"></polyline>
+        <polyline stroke="#55ACED" stroke-width="2" points="87 86 101 82 115 77 129 72 143 67"></polyline>
+        <rect fill="#F5F5F5" x="87" y="50" width="45" height="4" rx="1.5"></rect>
+        <rect fill="#E0E0E0" x="87" y="91" width="56" height="1"></rect>
+        <rect fill="#E0E0E0" x="87" y="59" width="1" height="32"></rect>
+    </g>
+</svg>
