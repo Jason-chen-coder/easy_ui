@@ -51,6 +51,7 @@ class _StepIndicatorBaseDemo extends StatefulWidget {
 
 class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
   int _currentStep = 0;
+  int _selectedStep = 0;
   final List<String> _steps = ['准备工作', '校准 X 轴', '校准 Y 轴', '完成校准'];
 
   @override
@@ -62,6 +63,12 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
           stepsLength: _steps.length,
           stepNames: _steps,
           currentStep: _currentStep,
+          selectedStep: _selectedStep,
+          onSelectedStepChanged: (step) {
+            setState(() {
+              _selectedStep = step;
+            });
+          },
         ),
         const SizedBox(height: 24),
         Row(
@@ -73,6 +80,7 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
                   ? () {
                       setState(() {
                         _currentStep--;
+                        _selectedStep = _currentStep;
                       });
                     }
                   : null,
@@ -85,6 +93,7 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
                   ? () {
                       setState(() {
                         _currentStep++;
+                        _selectedStep = _currentStep;
                       });
                     }
                   : null,
@@ -93,6 +102,45 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
           ],
         ),
       ],
+    );
+  }
+}
+```
+''',
+        ),
+        h2('自定义样式'),
+        p('通过 stepStyles 按步骤索引覆盖指定步骤的背景颜色、文字颜色、图标圆形背景颜色和图标颜色。'),
+        WidgetHighlight(
+          builder: (_) {
+            return const _StepIndicatorCustomStyleDemo();
+          },
+          codeSnippet: '''
+```dart
+class _StepIndicatorCustomStyleDemo extends StatelessWidget {
+  const _StepIndicatorCustomStyleDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    const steps = ['准备工作', '样本处理', '质控审核', '完成'];
+
+    return EasyStepIndicator(
+      stepsLength: steps.length,
+      stepNames: steps,
+      currentStep: 1,
+      stepStyles: const {
+        1: (
+          backgroundColor: Colors.orange,
+          textColor: Colors.white,
+          iconBackgroundColor: Colors.white,
+          iconColor: Colors.orange,
+        ),
+        2: (
+          backgroundColor: Colors.blue,
+          textColor: Colors.white,
+          iconBackgroundColor: Colors.white,
+          iconColor: Colors.blue,
+        ),
+      },
     );
   }
 }
@@ -145,11 +193,47 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
                     ),
                     DataRow(
                       cells: [
+                        DataCell(Text('selectedStep')),
+                        DataCell(Text('int?')),
+                        DataCell(Text('null')),
+                        DataCell(Text('否')),
+                        DataCell(Text('当前选中查看的步骤索引（从0开始）')),
+                      ],
+                    ),
+                    DataRow(
+                      cells: [
+                        DataCell(Text('onSelectedStepChanged')),
+                        DataCell(Text('ValueChanged<int>?')),
+                        DataCell(Text('null')),
+                        DataCell(Text('否')),
+                        DataCell(Text('点击步骤时触发，返回被选中的步骤索引')),
+                      ],
+                    ),
+                    DataRow(
+                      cells: [
+                        DataCell(Text('selectedStepScale')),
+                        DataCell(Text('double')),
+                        DataCell(Text('1.15')),
+                        DataCell(Text('否')),
+                        DataCell(Text('选中步骤的放大倍率')),
+                      ],
+                    ),
+                    DataRow(
+                      cells: [
                         DataCell(Text('height')),
                         DataCell(Text('double')),
                         DataCell(Text('76')),
                         DataCell(Text('否')),
                         DataCell(Text('步骤总数')),
+                      ],
+                    ),
+                    DataRow(
+                      cells: [
+                        DataCell(Text('stepStyles')),
+                        DataCell(Text('Map<int, EasyStepIndicatorStyle>?')),
+                        DataCell(Text('null')),
+                        DataCell(Text('否')),
+                        DataCell(Text('按步骤索引覆盖背景色、文字颜色、图标圆形背景色和图标颜色')),
                       ],
                     ),
                   ],
@@ -173,6 +257,7 @@ class _StepIndicatorBaseDemo extends StatefulWidget {
 
 class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
   int _currentStep = 0;
+  int _selectedStep = 0;
   final List<String> _steps = ['准备工作', '校准 X 轴', '校准 Y 轴', '完成校准'];
 
   @override
@@ -184,6 +269,12 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
           stepsLength: _steps.length,
           stepNames: _steps,
           currentStep: _currentStep,
+          selectedStep: _selectedStep,
+          onSelectedStepChanged: (step) {
+            setState(() {
+              _selectedStep = step;
+            });
+          },
         ),
         const SizedBox(height: 24),
         Row(
@@ -196,6 +287,7 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
                       ? () {
                         setState(() {
                           _currentStep--;
+                          _selectedStep = _currentStep;
                         });
                       }
                       : null,
@@ -209,6 +301,7 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
                       ? () {
                         setState(() {
                           _currentStep++;
+                          _selectedStep = _currentStep;
                         });
                       }
                       : null,
@@ -217,6 +310,35 @@ class _StepIndicatorBaseDemoState extends State<_StepIndicatorBaseDemo> {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _StepIndicatorCustomStyleDemo extends StatelessWidget {
+  const _StepIndicatorCustomStyleDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    const steps = ['准备工作', '样本处理', '质控审核', '完成'];
+
+    return EasyStepIndicator(
+      stepsLength: steps.length,
+      stepNames: steps,
+      currentStep: 1,
+      stepStyles: const {
+        1: (
+          backgroundColor: Colors.orange,
+          textColor: Colors.white,
+          iconBackgroundColor: Colors.white,
+          iconColor: Colors.orange,
+        ),
+        2: (
+          backgroundColor: Colors.blue,
+          textColor: Colors.white,
+          iconBackgroundColor: Colors.white,
+          iconColor: Colors.blue,
+        ),
+      },
     );
   }
 }
