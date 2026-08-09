@@ -1,8 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:easy_ui/easy_ui.dart';
-import 'package:easy_ui/src/easy_menu/easy_menu_anchor.dart';
-import 'package:easy_ui/src/easy_theme.dart';
 import 'package:flutter/material.dart';
 
 class EasyPagination extends StatelessWidget {
@@ -135,7 +133,7 @@ class EasyPagination extends StatelessWidget {
       }
     }
 
-    return Container(
+    return SizedBox(
       height: 40,
       child: Stack(
         children: [
@@ -167,7 +165,7 @@ class EasyPagination extends StatelessWidget {
                             }
                             : null,
                     borderRadius: BorderRadius.circular(18),
-                    child: Container(
+                    child: SizedBox(
                       width: 36,
                       height: 36,
                       child: Icon(
@@ -190,7 +188,7 @@ class EasyPagination extends StatelessWidget {
                               onPageChanged(currentPage + 1);
                             }
                             : null,
-                    child: Container(
+                    child: SizedBox(
                       width: 36,
                       height: 36,
                       child: Icon(

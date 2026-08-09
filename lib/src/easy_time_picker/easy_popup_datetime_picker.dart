@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../easy_ui.dart';
-import '../l10n/gen/easy_ui_localizations.dart';
 import './enhanced_datetime_picker.dart';
 import 'package:intl/intl.dart';
 

@@ -905,7 +905,6 @@ class _EasyDataTableViewState extends State<_EasyDataTableView> {
 
 class _EasyDataTableFilter extends StatelessWidget {
   const _EasyDataTableFilter({
-    super.key,
     required this.loadingData,
     required this.columnConfigs,
     required this.invisibleColumnIndices,

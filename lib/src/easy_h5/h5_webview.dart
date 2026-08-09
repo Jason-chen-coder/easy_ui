@@ -205,9 +205,9 @@ class H5WebViewState extends State<H5WebView> {
     });
     _applyUploadParams(widget.uploadParams);
     if (widget.extraBridgeMethods.isNotEmpty) {
-      widget.extraBridgeMethods.forEach((element) {
+      for (final element in widget.extraBridgeMethods) {
         widget.bridge.register(element);
-      });
+      }
     }
     if (_controller != null && _initialUrl != null) {
       await _controller!.loadUrl(
@@ -328,7 +328,7 @@ class H5WebViewState extends State<H5WebView> {
         sink.add(chunk);
         receivedBytes += chunk.length;
         final progress = (receivedBytes / totalBytes * 100).toStringAsFixed(1);
-        ErrorHandler.instance.logInfo("下载进度: ${progress}%");
+        ErrorHandler.instance.logInfo('下载进度: $progress%');
       });
 
       await sink.close();
