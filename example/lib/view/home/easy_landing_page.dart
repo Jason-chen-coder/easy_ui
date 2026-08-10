@@ -27,7 +27,6 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const _easyUiRepoUrl = 'https://github.com/Jason-chen-coder/EasyUI';
-const _easyUiPreviewUrl = 'https://jason-chen-coder.github.io/EasyUI/';
 const _githubProfileUrl = 'https://github.com/Jason-chen-coder';
 const _sponsorEmail = 'hongxin.jasonchen@gmail.com';
 
@@ -201,8 +200,15 @@ class _EasyLandingPageState extends State<EasyLandingPage> {
               SliverToBoxAdapter(
                 child: _ConstrainedSection(
                   top: 34,
-                  bottom: 28,
-                  child: _FeatureSection(palette: palette),
+                  bottom: 36,
+                  child: _PlatformFeatureSection(palette: palette),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: _ConstrainedSection(
+                  top: 36,
+                  bottom: 36,
+                  child: _CapabilityFeatureSection(palette: palette),
                 ),
               ),
               SliverToBoxAdapter(
@@ -374,7 +380,6 @@ class _HeroSection extends StatelessWidget {
           constraints: BoxConstraints(minHeight: math.min(viewportHeight, 760)),
           child: Column(
             children: [
-              _HeroNav(palette: palette, onNavigate: onNavigate),
               SizedBox(height: width < 720 ? 42 : 58),
               _HeroIntro(palette: palette, onNavigate: onNavigate),
               SizedBox(height: width < 720 ? 34 : 46),
@@ -385,129 +390,6 @@ class _HeroSection extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _HeroNav extends StatelessWidget {
-  const _HeroNav({required this.palette, required this.onNavigate});
-
-  final _LandingPalette palette;
-  final ValueChanged<String> onNavigate;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 720;
-
-        return Row(
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: palette.surface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: palette.border),
-                    boxShadow: [
-                      BoxShadow(
-                        color: palette.shadow,
-                        blurRadius: 16,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Image.asset('assets/images/easy_ui_logo.png'),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Easy UI',
-                  style: _LandingTypography.contentTitle(
-                    palette,
-                  ).copyWith(fontSize: 20),
-                ),
-              ],
-            ),
-            const Spacer(),
-            if (compact)
-              Tooltip(
-                message: '进入组件总览',
-                child: IconButton(
-                  onPressed: () => onNavigate('/overview'),
-                  icon: Icon(Icons.widgets_outlined, color: palette.textStrong),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: palette.surface,
-                    side: BorderSide(color: palette.border),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              )
-            else ...[
-              _HeroNavButton(
-                label: 'GitHub',
-                icon: const _GitHubMarkIcon(),
-                palette: palette,
-                onPressed: () => _launchExternal(Uri.parse(_easyUiRepoUrl)),
-              ),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _GitHubMarkIcon extends StatelessWidget {
-  const _GitHubMarkIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: 18,
-      child: ClipOval(
-        child: Image.asset(
-          'assets/images/hero_github.png',
-          fit: BoxFit.cover,
-          semanticLabel: 'GitHub',
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroNavButton extends StatelessWidget {
-  const _HeroNavButton({
-    required this.label,
-    required this.icon,
-    required this.palette,
-    required this.onPressed,
-  });
-
-  final String label;
-  final Widget icon;
-  final _LandingPalette palette;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: icon,
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: palette.textStrong,
-        backgroundColor: palette.surface,
-        side: BorderSide(color: palette.border),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -544,7 +426,7 @@ class _HeroIntro extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 620),
+          constraints: const BoxConstraints(maxWidth: 640),
           child: Text(
             '迁移后的组件集中在一个可浏览、可验证、可复制的 Flutter UI kit 里。',
             textAlign: TextAlign.center,
@@ -605,7 +487,10 @@ class _HeroVisual extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.sizeOf(context).width < 720 ? 390 : 460,
+      height:
+          MediaQuery.sizeOf(context).width < 720
+              ? 390
+              : math.max(320, MediaQuery.sizeOf(context).height - 420),
       child: Container(
         padding: EdgeInsets.all(
           MediaQuery.sizeOf(context).width < 720 ? 18 : 26,
@@ -1053,20 +938,54 @@ class _AssetMapPainter extends CustomPainter {
   }
 }
 
-class _FeatureSection extends StatelessWidget {
-  const _FeatureSection({required this.palette});
+class _PlatformFeatureSection extends StatelessWidget {
+  const _PlatformFeatureSection({required this.palette});
+
+  final _LandingPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final feature = _FeatureData(
+      icon: Icons.devices_other,
+      color: palette.blue,
+      title: '全平台支持',
+      description: '一套 Easy UI 组件覆盖移动端、桌面端与 Web，让迁移后的 Flutter 页面保持一致体验。',
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          '把 Flutter 页面迁移，收进一套工作台。',
+          textAlign: TextAlign.center,
+          style: _LandingTypography.sectionTitle(palette),
+        ),
+        const SizedBox(height: 12),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: Text(
+            '跨端支持、组件组合、开放源码和响应式适配，被组织成同一个可以直接验证的 example 流程。',
+            textAlign: TextAlign.center,
+            style: _LandingTypography.body(palette),
+          ),
+        ),
+        const SizedBox(height: 30),
+        _ViewportFadeIn(
+          child: _FeatureSpotlight(data: feature, palette: palette),
+        ),
+      ],
+    );
+  }
+}
+
+class _CapabilityFeatureSection extends StatelessWidget {
+  const _CapabilityFeatureSection({required this.palette});
 
   final _LandingPalette palette;
 
   @override
   Widget build(BuildContext context) {
     final items = [
-      _FeatureData(
-        icon: Icons.devices_other,
-        color: palette.blue,
-        title: '全平台支持',
-        description: '一套 Easy UI 组件覆盖移动端、桌面端与 Web，让迁移后的 Flutter 页面保持一致体验。',
-      ),
       _FeatureData(
         icon: Icons.widgets_outlined,
         color: palette.amber,
@@ -1091,7 +1010,7 @@ class _FeatureSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          '把 Flutter 页面迁移，收进一套工作台。',
+          '迁移后的页面能力栈',
           textAlign: TextAlign.center,
           style: _LandingTypography.sectionTitle(palette),
         ),
@@ -1099,54 +1018,14 @@ class _FeatureSection extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
           child: Text(
-            '跨端支持、组件组合、开放源码和响应式适配，被组织成同一个可以直接验证的 example 流程。',
+            '组件组合、开放源码和响应式适配，构成从迁移到交付的完整页面能力。',
             textAlign: TextAlign.center,
             style: _LandingTypography.body(palette),
           ),
         ),
         const SizedBox(height: 30),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = constraints.maxWidth < 880;
-            final spotlight = _ViewportFadeIn(
-              child: _FeatureSpotlight(data: items[0], palette: palette),
-            );
-            final supportPanel = _ViewportFadeIn(
-              child: _FeatureSupportPanel(
-                items: items.skip(1).toList(),
-                palette: palette,
-              ),
-            );
-
-            if (compact) {
-              return Column(
-                children: [spotlight, const SizedBox(height: 16), supportPanel],
-              );
-            }
-
-            return Table(
-              columnWidths: const {
-                0: FlexColumnWidth(11),
-                1: FixedColumnWidth(16),
-                2: FlexColumnWidth(9),
-              },
-              children: [
-                TableRow(
-                  children: [
-                    TableCell(
-                      verticalAlignment: TableCellVerticalAlignment.top,
-                      child: spotlight,
-                    ),
-                    const SizedBox.shrink(),
-                    TableCell(
-                      verticalAlignment: TableCellVerticalAlignment.fill,
-                      child: supportPanel,
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+        _ViewportFadeIn(
+          child: _FeatureSupportPanel(items: items, palette: palette),
         ),
       ],
     );
@@ -1206,27 +1085,16 @@ class _FeatureSpotlight extends StatelessWidget {
         final tight = constraints.maxWidth < 390;
 
         return Container(
-          constraints: const BoxConstraints(minHeight: 430),
           padding: EdgeInsets.all(compact ? 22 : 30),
           decoration: BoxDecoration(
             color: palette.surface,
-            border: Border.all(color: data.color.withValues(alpha: 0.24)),
-            borderRadius: BorderRadius.circular(28),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                data.color.withValues(alpha: 0.13),
-                palette.surface,
-                palette.green.withValues(alpha: 0.08),
-              ],
-              stops: const [0, 0.56, 1],
-            ),
+            border: Border.all(color: data.color.withValues(alpha: 0.18)),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: palette.shadow.withValues(alpha: 0.55),
-                blurRadius: 34,
-                offset: const Offset(0, 18),
+                color: palette.shadow.withValues(alpha: 0.32),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
@@ -1239,16 +1107,11 @@ class _FeatureSpotlight extends StatelessWidget {
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      color: palette.surface.withValues(alpha: 0.86),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: palette.border),
-                      boxShadow: [
-                        BoxShadow(
-                          color: palette.shadow,
-                          blurRadius: 18,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+                      color: data.color.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: data.color.withValues(alpha: 0.16),
+                      ),
                     ),
                     child: Icon(data.icon, color: data.color, size: 32),
                   ),
@@ -1994,8 +1857,6 @@ class _ResourceSection extends StatelessWidget {
       children: [
         _SponsorSection(palette: palette),
         _FooterDivider(palette: palette),
-        _FooterLinksSection(palette: palette),
-        _FooterDivider(palette: palette),
         _FooterCopyright(palette: palette),
       ],
     );
@@ -2118,49 +1979,47 @@ class _SponsorProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _ViewportFadeIn(
-      child: Tooltip(
-        message: '打开 ${data.name}',
-        child: InkWell(
-          onTap:
-              () => _launchExternal(
-                Uri.parse(data.url),
-                webOnlyWindowName: '_self',
-              ),
-          borderRadius: BorderRadius.circular(8),
-          mouseCursor: SystemMouseCursors.click,
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _SponsorProjectIcon(data: data, palette: palette),
-                const SizedBox(width: 22),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        data.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: _LandingTypography.contentTitle(
-                          palette,
-                        ).copyWith(fontSize: 22),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        data.description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: _LandingTypography.body(palette),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+    return Tooltip(
+      message: '打开 ${data.name}',
+      child: InkWell(
+        onTap:
+            () => _launchExternal(
+              Uri.parse(data.url),
+              webOnlyWindowName: '_self',
             ),
+        borderRadius: BorderRadius.circular(8),
+        mouseCursor: SystemMouseCursors.click,
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _SponsorProjectIcon(data: data, palette: palette),
+              const SizedBox(width: 22),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      data.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: _LandingTypography.contentTitle(
+                        palette,
+                      ).copyWith(fontSize: 22),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      data.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: _LandingTypography.body(palette),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -2196,143 +2055,6 @@ class _SponsorProjectIcon extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Icon(data.icon!, color: palette.surface, size: 42),
-    );
-  }
-}
-
-class _FooterLinksSection extends StatelessWidget {
-  const _FooterLinksSection({required this.palette});
-
-  final _LandingPalette palette;
-
-  @override
-  Widget build(BuildContext context) {
-    final columns = [
-      const _FooterColumnData(
-        title: '链接',
-        links: [
-          _FooterLinkData('Github', _easyUiRepoUrl),
-          _FooterLinkData('在线预览', _easyUiPreviewUrl),
-          _FooterLinkData('更新日志', '$_easyUiRepoUrl/releases'),
-          _FooterLinkData('常见问题', '$_easyUiRepoUrl/issues'),
-        ],
-      ),
-      const _FooterColumnData(
-        title: '讨论区',
-        links: [
-          _FooterLinkData('建议反馈', '$_easyUiRepoUrl/issues/new'),
-          _FooterLinkData('Issue 列表', '$_easyUiRepoUrl/issues'),
-          _FooterLinkData('参与贡献', '$_easyUiRepoUrl/pulls'),
-        ],
-      ),
-      const _FooterColumnData(
-        title: '资源链接',
-        links: [
-          _FooterLinkData(
-            'Mxgraph EasyFlowEditor',
-            'https://github.com/Jason-chen-coder/Mxgraph-EasyFlowEditor',
-          ),
-          _FooterLinkData(
-            'Flutter EasySpeechRecognition',
-            'https://github.com/Jason-chen-coder/Flutter-EasySpeechRecognition',
-          ),
-          _FooterLinkData('Github 主页', _githubProfileUrl),
-        ],
-      ),
-      const _FooterColumnData(
-        title: '联系我',
-        links: [
-          _FooterLinkData('邮箱', 'mailto:$_sponsorEmail'),
-          _FooterLinkData('Github', _githubProfileUrl),
-          _FooterLinkData('合作与赞助', 'mailto:$_sponsorEmail'),
-        ],
-      ),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 58),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final columnsPerRow =
-              constraints.maxWidth >= 900
-                  ? 4
-                  : constraints.maxWidth >= 620
-                  ? 2
-                  : 1;
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: columns.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columnsPerRow,
-              mainAxisExtent: 206,
-              mainAxisSpacing: 26,
-              crossAxisSpacing: 36,
-            ),
-            itemBuilder:
-                (context, index) =>
-                    _FooterColumn(data: columns[index], palette: palette),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _FooterColumn extends StatelessWidget {
-  const _FooterColumn({required this.data, required this.palette});
-
-  final _FooterColumnData data;
-  final _LandingPalette palette;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          data.title,
-          style: _LandingTypography.sectionTitle(
-            palette,
-          ).copyWith(fontSize: 24),
-        ),
-        const SizedBox(height: 24),
-        ...data.links.map(
-          (link) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _FooterLink(data: link, palette: palette),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _FooterLink extends StatelessWidget {
-  const _FooterLink({required this.data, required this.palette});
-
-  final _FooterLinkData data;
-  final _LandingPalette palette;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => _launchExternal(Uri.parse(data.url)),
-      borderRadius: BorderRadius.circular(4),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Text(
-          data.label,
-          style: _LandingTypography.link(palette).copyWith(
-            decoration:
-                data.url.startsWith('http')
-                    ? TextDecoration.underline
-                    : TextDecoration.none,
-            decorationColor: palette.textSoft,
-            decorationThickness: 1,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -2373,7 +2095,13 @@ class _FooterCopyright extends StatelessWidget {
                   palette,
                 ).copyWith(color: palette.textStrong),
               ),
-              Text('Easy UI', style: _LandingTypography.linkStrong(palette)),
+              InkWell(
+                onTap: () => _launchExternal(Uri.parse(_easyUiRepoUrl)),
+                child: Text(
+                  'Easy UI',
+                  style: _LandingTypography.linkStrong(palette),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -2383,14 +2111,6 @@ class _FooterCopyright extends StatelessWidget {
             style: _LandingTypography.link(
               palette,
             ).copyWith(color: palette.textStrong),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '联系邮箱 $_sponsorEmail',
-            textAlign: TextAlign.center,
-            style: _LandingTypography.bodySmall(
-              palette,
-            ).copyWith(color: palette.textMuted),
           ),
         ],
       ),
@@ -2478,7 +2198,6 @@ class _FeatureSupportPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 430),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: palette.surface,
@@ -2494,7 +2213,7 @@ class _FeatureSupportPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '迁移后的页面能力栈',
+            '三项交付能力',
             style: _LandingTypography.contentTitle(
               palette,
             ).copyWith(fontSize: 22),
@@ -2826,20 +2545,6 @@ class _SponsorProjectData {
   final String url;
   final IconData? icon;
   final String? imageAsset;
-}
-
-class _FooterColumnData {
-  const _FooterColumnData({required this.title, required this.links});
-
-  final String title;
-  final List<_FooterLinkData> links;
-}
-
-class _FooterLinkData {
-  const _FooterLinkData(this.label, this.url);
-
-  final String label;
-  final String url;
 }
 
 class _CategoryData {
