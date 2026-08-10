@@ -242,8 +242,8 @@ EasyRangeSlider(
   }
 
   Widget _buildParamTable(List<_Param> params) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    return SizedBox(
+      width: double.infinity,
       child: DataTable(
         columns: const [
           DataColumn(

@@ -828,41 +828,53 @@ class DataTable extends StatelessWidget {
     final rowHeight = dataRowMaxHeight ?? dataRowMinHeight ?? 48;
     final headerHeight = 48.0;
     final height = headerHeight + (rows.length * rowHeight);
-    final width = columns.length * (columnSpacing ?? 160);
+    final minimumWidth =
+        (columns.length * (columnSpacing ?? 160))
+            .clamp(240, double.infinity)
+            .toDouble();
 
-    return SizedBox(
-      height: height.clamp(96, 640).toDouble(),
-      width: width.clamp(240, double.infinity).toDouble(),
-      child: EasyDataTable(
-        loadingData: false,
-        headerHeight: headerHeight,
-        rowHeight: rowHeight,
-        rowCount: rows.length,
-        columnConfigs: [
-          for (var i = 0; i < columns.length; i++)
-            EasyDataTableColumnConfig(
-              visibilityOptionName: null,
-              width: columnSpacing ?? 160,
-              alwaysVisible: true,
-            ),
-        ],
-        headerBuilder:
-            (context, column) => DefaultTextStyle.merge(
-              style: const TextStyle(fontWeight: FontWeight.w600),
-              child: columns[column].label,
-            ),
-        cellBuilder: (context, vicinity) {
-          final cell = rows[vicinity.row].cells[vicinity.column];
-          return Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalMargin ?? 8),
-              child: cell.child,
-            ),
-          );
-        },
-        emptyWidget: const EasyEmptyView(),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width =
+            constraints.hasBoundedWidth ? constraints.maxWidth : minimumWidth;
+
+        return SizedBox(
+          height: height.clamp(96, 640).toDouble(),
+          width: width,
+          child: EasyDataTable(
+            loadingData: false,
+            headerHeight: headerHeight,
+            rowHeight: rowHeight,
+            rowCount: rows.length,
+            columnConfigs: [
+              for (var i = 0; i < columns.length; i++)
+                EasyDataTableColumnConfig(
+                  visibilityOptionName: null,
+                  width: columnSpacing ?? 160,
+                  alwaysVisible: true,
+                ),
+            ],
+            headerBuilder:
+                (context, column) => DefaultTextStyle.merge(
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  child: columns[column].label,
+                ),
+            cellBuilder: (context, vicinity) {
+              final cell = rows[vicinity.row].cells[vicinity.column];
+              return Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalMargin ?? 8,
+                  ),
+                  child: cell.child,
+                ),
+              );
+            },
+            emptyWidget: const EasyEmptyView(),
+          ),
+        );
+      },
     );
   }
 }

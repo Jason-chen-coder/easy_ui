@@ -296,8 +296,8 @@ class ToolTip extends StatelessWidget {
         h2('ToolTip参数说明'),
         WidgetHighlight(
           builder: (_) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            return SizedBox(
+              width: double.infinity,
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('参数名')),

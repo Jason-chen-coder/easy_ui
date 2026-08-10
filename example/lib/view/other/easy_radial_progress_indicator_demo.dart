@@ -654,8 +654,8 @@ class _ParameterTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    return SizedBox(
+      width: double.infinity,
       child: DataTable(
         columns: const [
           DataColumn(label: Text('参数名')),
@@ -771,8 +771,8 @@ class _StyleParameterTable extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         p('尺寸参数（基于 326 基准按比例缩放）：'),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+        SizedBox(
+          width: double.infinity,
           child: DataTable(
             columns: const [
               DataColumn(label: Text('参数名')),
@@ -834,8 +834,8 @@ class _StyleParameterTable extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         p('颜色参数：'),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+        SizedBox(
+          width: double.infinity,
           child: DataTable(
             columns: const [
               DataColumn(label: Text('参数名')),
@@ -911,8 +911,8 @@ class _StyleParameterTable extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         p('预设主题工厂方法：'),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+        SizedBox(
+          width: double.infinity,
           child: DataTable(
             columns: const [
               DataColumn(label: Text('方法名')),
